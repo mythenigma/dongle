@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>懂了 - 预测市场游戏</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- 1. 全局样式与变量 --- */
+        :root {
+            --bg-color: #1a1a2e;
+            --card-bg-color: #1f1f3a;
+            --primary-text-color: #e0e0e0;
+            --secondary-text-color: #a0a0c0;
+            --accent-gradient: linear-gradient(90deg, #e94560, #8e44ad);
+            --yes-color: #2ecc71;
+            --no-color: #e74c3c;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --glow-color: rgba(233, 69, 96, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* --- 2. 顶部导航栏 --- */
+        .main-header {
+            background-color: var(--card-bg-color);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .main-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            margin: 0 2rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar input:focus {
+            box-shadow: 0 0 15px var(--glow-color);
+            border-color: #e94560;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .create-topic-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            background: var(--accent-gradient);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .create-topic-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--glow-color);
+        }
+
+        .user-avatar i {
+            font-size: 1.8rem;
+            color: var(--secondary-text-color);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .user-avatar i:hover{
+            color: white;
+        }
+
+        /* --- 3. 主体内容区域 --- */
+        main {
+            padding: 2rem 0;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            background-color: transparent;
+            color: var(--secondary-text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background-color: var(--card-bg-color);
+            color: white;
+        }
+
+        .filter-btn.active {
+            background: var(--accent-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        /* --- 4. 话题卡片设计 --- */
+        .topic-card {
+            background-color: var(--card-bg-color);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 5px 20px var(--shadow-color);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px var(--shadow-color);
+        }
+
+        .card-image {
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .card-image::after{
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(to top, rgba(31,31,58,1) 0%, rgba(31,31,58,0) 50%);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            color: var(--secondary-text-color);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--bg-color);
+            border-radius: 5px;
+            height: 10px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-bar-yes {
+            height: 100%;
+            background-color: var(--yes-color);
+            border-radius: 5px 0 0 5px;
+        }
+        
+        .prediction-odds {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+        .odds-yes{ color: var(--yes-color); }
+        .odds-no{ color: var(--no-color); }
+
+        .card-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: auto; /* Pushes buttons to the bottom */
+        }
+
+        .action-btn {
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-yes {
+            background-color: rgba(46, 204, 113, 0.2);
+            border-color: var(--yes-color);
+            color: var(--yes-color);
+        }
+        .btn-yes:hover {
+            background-color: var(--yes-color);
+            color: white;
+        }
+
+        .btn-no {
+            background-color: rgba(231, 76, 60, 0.2);
+            border-color: var(--no-color);
+            color: var(--no-color);
+        }
+        .btn-no:hover {
+            background-color: var(--no-color);
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">懂了</div>
+            <div class="search-bar">
+                <input type="search" placeholder="搜索感兴趣的话题...">
+            </div>
+            <div class="header-actions">
+                <button class="create-topic-btn">创建话题</button>
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="filters">
+                <button class="filter-btn active">热门</button>
+                <button class="filter-btn">科技</button>
+                <button class="filter-btn">体育</button>
+                <button class="filter-btn">娱乐</button>
+                <button class="filter-btn">游戏</button>
+            </section>
+
+            <section class="topic-grid">
+                <article class="topic-card">
+                    <div class="card-image" style="background-image: url('https://img.maipdf.com/2024/07/02/763c3a4f8990c.png');"></div>
+                    <div class="card-content">
+                        <h2 class="card-title">《射雕英雄传：侠之大者》首周票房能否突破5亿？</h2>
+                        <div class="card-stats">
+                            <span><i class="fas fa-clock"></i> 剩余 15 天</span>
+                            <span><i class="fas fa-users"></i> 1,234,567 人参与</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-yes" style="width: 68%;"></div>
+                        </div>
+                        <div class="prediction-odds">
+                            <span class="odds-yes">是 (68%)</span>
+                            <span class="odds-no">否 (32%)</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="action-btn btn-yes">预测“是”</button>
+                            <button class="action-btn btn-no">预测“否”</button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="topic-card">
+                    <div class="card-image" style="background-image: url('https://img.maipdf.com/2024/07/02/672851b4d081f.png');"></div>
+                    <div class="card-content">
+                        <h2 class="card-title">下一次美联储议息会议是否会宣布降息？</h2>
+                        <div class="card-stats">
+                            <span><i class="fas fa-clock"></i> 剩余 22 天</span>
+                            <span><i class="fas fa-users"></i> 890,123 人参与</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-yes" style="width: 45%;"></div>
+                        </div>
+                         <div class="prediction-odds">
+                            <span class="odds-yes">是 (45%)</span>
+                            <span class="odds-no">否 (55%)</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="action-btn btn-yes">预测“是”</button>
+                            <button class="action-btn btn-no">预测“否”</button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="topic-card">
+                    <div class="card-image" style="background-image: url('https://img.maipdf.com/2024/07/02/9cc476b71f308.png');"></div>
+                    <div class="card-content">
+                        <h2 class="card-title">今年S系列赛全球总决赛，LPL赛区能否再次夺冠？</h2>
+                        <div class="card-stats">
+                            <span><i class="fas fa-clock"></i> 剩余 98 天</span>
+                            <span><i class="fas fa-users"></i> 2,345,678 人参与</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-yes" style="width: 75%;"></div>
+                        </div>
+                         <div class="prediction-odds">
+                            <span class="odds-yes">是 (75%)</span>
+                            <span class="odds-no">否 (25%)</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="action-btn btn-yes">预测“是”</button>
+                            <button class="action-btn btn-no">预测“否”</button>
+                        </div>
+                    </div>
+                </article>
+                
+                 <article class="topic-card">
+                    <div class="card-image" style="background-image: url('https://img.maipdf.com/2024/07/02/82dd0c634c4f3.png');"></div>
+                    <div class="card-content">
+                        <h2 class="card-title">东京明日（7月3日）是否会下雨？</h2>
+                        <div class="card-stats">
+                            <span><i class="fas fa-clock"></i> 剩余 12 小时</span>
+                            <span><i class="fas fa-users"></i> 56,789 人参与</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-yes" style="width: 22%;"></div>
+                        </div>
+                         <div class="prediction-odds">
+                            <span class="odds-yes">是 (22%)</span>
+                            <span class="odds-no">否 (78%)</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="action-btn btn-yes">预测“是”</button>
+                            <button class="action-btn btn-no">预测“否”</button>
+                        </div>
+                    </div>
+                </article>
+
+            </section>
+        </div>
+    </main>
+
+<script>
+    // 简单的JS交互，用于切换筛选按钮的激活状态
+    const filterButtons = document.querySelectorAll('.filter-btn');
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // 移除所有按钮的 'active' 类
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // 给当前点击的按钮添加 'active' 类
+            button.classList.add('active');
+            
+            console.log(`筛选分类: ${button.textContent}`);
+        });
+    });
+
+    const predictionButtons = document.querySelectorAll('.action-btn');
+    predictionButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            const choice = e.target.textContent;
+            const cardTitle = e.target.closest('.card-content').querySelector('.card-title').textContent;
+            console.log(`你对【${cardTitle}】选择了【${choice}】`);
+            alert(`你对【${cardTitle}】选择了【${choice}】。这是一个静态原型，实际功能需要后端开发。`);
+        });
+    });
+</script>
+
+</body>
+</html>

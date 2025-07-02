@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>懂了 - 中国首个预测市场游戏</title>
+    <meta name="description" content="我们让每一个观点产生价值。懂了是一个基于群体智慧的预测市场游戏，将枯燥的信息获取，变成一场充满参与感和即时反馈的智力游戏。">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" type="text/css">
+
+    <style>
+        :root {
+            --bg-color: #12121f;
+            --card-bg-color: #1a1a2e;
+            --primary-text-color: #f0f0f5;
+            --secondary-text-color: #a0a0c0;
+            --accent-gradient: linear-gradient(90deg, #e94560, #8e44ad);
+            --cta-gradient: linear-gradient(90deg, #114FEE, #C835F8);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --glow-color: rgba(200, 53, 248, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Poppins', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        
+        /* --- 动画效果 --- */
+        .reveal {
+            position: relative;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 1s ease;
+        }
+        .reveal.active {
+            transform: translateY(0px);
+            opacity: 1;
+        }
+        
+        /* --- 导航栏 --- */
+        .main-header {
+            padding: 1.5rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: background-color 0.3s ease;
+        }
+        .main-header.scrolled {
+            background-color: rgba(26, 26, 46, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .main-header .container { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: 700; background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .nav-links a { color: var(--primary-text-color); text-decoration: none; margin-left: 2rem; font-weight: 500; transition: color 0.3s ease; }
+        .nav-links a:hover { color: #e94560; }
+
+        /* --- 主视觉区域 --- */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 20%, rgba(75, 123, 236, 0.1), transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(200, 53, 248, 0.15), transparent 40%);
+            animation: pulse 15s infinite alternate;
+        }
+        @keyframes pulse { from { opacity: 0.6; transform: scale(1); } to { opacity: 1; transform: scale(1.05); } }
+        .hero-content { position: relative; z-index: 2; }
+        .hero h1 { font-size: 3.8rem; font-weight: 700; margin-bottom: 1rem; line-height: 1.2; }
+        .hero .subtitle { font-size: 1.8rem; font-weight: 300; margin-bottom: 2rem; color: var(--secondary-text-color); }
+        .hero .tagline { font-size: 1.1rem; max-width: 650px; margin: 0 auto 2.5rem auto; }
+        .hero .cta-button {
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            background: var(--cta-gradient);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .hero .cta-button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px var(--glow-color); }
+
+        /* --- 通用区块样式 --- */
+        .page-section { padding: 100px 0; }
+        .page-section.alt-bg { background-color: #161625; }
+        .section-title { text-align: center; font-size: 2.8rem; font-weight: 600; margin-bottom: 1rem; }
+        .section-subtitle { text-align: center; color: var(--secondary-text-color); margin-bottom: 4rem; max-width: 600px; margin-left: auto; margin-right: auto;}
+        
+        /* --- 特性区域 --- */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        .feature-card {
+            background-color: var(--card-bg-color);
+            padding: 2.5rem 2rem;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px var(--shadow-color); border-color: #8e44ad; }
+        .feature-icon { font-size: 2.5rem; margin-bottom: 1.5rem; background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .feature-card h3 { font-size: 1.5rem; margin-bottom: 0.75rem; }
+        .feature-card p { color: var(--secondary-text-color); }
+
+        /* --- 团队区域 --- */
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
+        .team-card { text-align: center; }
+        .team-card img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem; border: 3px solid var(--card-bg-color); box-shadow: 0 5px 15px var(--shadow-color); }
+        .team-card h4 { font-size: 1.2rem; margin-bottom: 0.25rem; }
+        .team-card p { color: var(--secondary-text-color); font-size: 0.9rem; }
+
+        /* --- 路线图区域 --- */
+        .roadmap-timeline { position: relative; padding: 2rem 0; }
+        .roadmap-timeline::before { content: ''; position: absolute; top: 0; left: 50%; width: 3px; height: 100%; background-image: var(--accent-gradient); transform: translateX(-50%); }
+        .timeline-item { position: relative; width: 50%; padding: 1rem 3rem; margin-bottom: 3rem; }
+        .timeline-item:nth-child(odd) { left: 0; text-align: right; }
+        .timeline-item:nth-child(even) { left: 50%; text-align: left; }
+        .timeline-item::after { content: ''; position: absolute; width: 25px; height: 25px; background: var(--card-bg-color); border: 4px solid #e94560; border-radius: 50%; top: 20px; z-index: 1; }
+        .timeline-item:nth-child(odd)::after { right: -12.5px; }
+        .timeline-item:nth-child(even)::after { left: -12.5px; }
+        .timeline-content { background: var(--card-bg-color); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border-color); }
+        .timeline-content h3 { font-size: 1.3rem; margin-bottom: 0.5rem; color: #e94560; }
+        .timeline-content p { color: var(--secondary-text-color); font-size: 0.95rem; }
+
+        /* --- 页脚 --- */
+        .footer { text-align: center; padding: 4rem 0; background-color: #161625; }
+        .footer p { color: var(--secondary-text-color); }
+    </style>
+</head>
+<body>
+
+    <header class="main-header" id="mainHeader">
+        <div class="container">
+            <div class="logo">懂了</div>
+            <nav class="nav-links">
+                <a href="#features">核心功能</a>
+                <a href="#team">创始团队</a>
+                <a href="#roadmap">未来规划</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-bg"></div>
+            <div class="container hero-content">
+                [cite_start]<h1 class="reveal">我们让每一个观点产生价值 [cite: 6]</h1>
+                [cite_start]<p class="subtitle reveal">中国首个预测市场游戏 [cite: 2]</p>
+                [cite_start]<p class="tagline reveal">把枯燥的信息获取，变成一场充满参与感和即时反馈的智力游戏。 [cite: 23]</p>
+                <a href="#features" class="cta-button reveal">了解更多</a>
+            </div>
+        </section>
+
+        <section id="features" class="page-section alt-bg">
+            <div class="container">
+                <h2 class="section-title reveal">发现“懂了”的核心魅力</h2>
+                [cite_start]<p class="section-subtitle reveal">一个基于群体智慧打造的平台，让你的洞察力与世界脉搏共振。 [cite: 22, 42]</p>
+                <div class="features-grid">
+                    <div class="feature-card reveal">
+                        <div class="feature-icon"><i class="fas fa-globe-americas"></i></div>
+                        <h3>全球实时热点</h3>
+                        [cite_start]<p>话题每日更新，紧跟全球热点新闻，并通过独有算法将新闻转化为可预测的话题。 [cite: 70]</p>
+                    </div>
+                    <div class="feature-card reveal">
+                        <div class="feature-icon"><i class="fas fa-gamepad"></i></div>
+                        <h3>零门槛游戏化</h3>
+                        [cite_start]<p>使用免费的“IQ”积分进行预测，通过日常任务、分享、参与等方式即可获取。 [cite: 108, 76]</p>
+                    </div>
+                    <div class="feature-card reveal">
+                        <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3>刺激的实时博弈</h3>
+                        [cite_start]<p>通过动态折线图查看实时胜率变化，体验观点碰撞的乐趣，提升游戏趣味性。 [cite: 78, 79]</p>
+                    </div>
+                    <div class="feature-card reveal">
+                        <div class="feature-icon"><i class="fas fa-users-cog"></i></div>
+                        <h3>社区驱动与AI仲裁</h3>
+                        [cite_start]<p>我们开放用户上传话题 [cite: 71][cite_start]，并通过AI及DAO机制对争议结果进行公平判断。 [cite: 46, 47]</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="team" class="page-section">
+            <div class="container">
+                <h2 class="section-title reveal">我们的团队</h2>
+                [cite_start]<p class="section-subtitle reveal">一支充满激情与创造力的纽约大学精英团队，致力于用技术驱动创新。 [cite: 28, 33, 36, 38]</p>
+                <div class="team-grid">
+                    <div class="team-card reveal">
+                        <img src="https://i.imgur.com/8Fk7LzU.png" alt="张滔 Tovey">
+                        <h4>张滔 Tovey</h4>
+                        [cite_start]<p>创始人 & CEO [cite: 26]</p>
+                    </div>
+                    <div class="team-card reveal">
+                        <img src="https://i.imgur.com/k9BvjSg.png" alt="陈嘉乐 Mark">
+                        <h4>陈嘉乐 Mark</h4>
+                        [cite_start]<p>联合创始人 & CTO [cite: 32]</p>
+                    </div>
+                    <div class="team-card reveal">
+                        <img src="https://i.imgur.com/oN8c4jP.png" alt="孔子昱 Chris">
+                        <h4>孔子昱 Chris</h4>
+                        [cite_start]<p>联合创始人 [cite: 35]</p>
+                    </div>
+                    <div class="team-card reveal">
+                        <img src="https://i.imgur.com/6XyZqV5.png" alt="曾子涵 Paul">
+                        <h4>曾子涵 Paul</h4>
+                        [cite_start]<p>联合创始人 [cite: 37]</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="page-section alt-bg">
+            <div class="container">
+                <h2 class="section-title reveal">未来规划</h2>
+                [cite_start]<p class="section-subtitle reveal">我们为“懂了”规划了清晰且宏大的发展蓝图，致力于打造一个完整的观点生态。 [cite: 16, 250, 265]</p>
+                <div class="roadmap-timeline">
+                    <div class="timeline-item reveal">
+                        <div class="timeline-content">
+                            <h3>2025 Q3 - 博弈</h3>
+                            [cite_start]<p>App 1.0版本上线，优化基础体验，构建初始粉丝社群。 [cite: 252, 253]</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item reveal">
+                        <div class="timeline-content">
+                            <h3>2025 Q4 - 商店</h3>
+                            [cite_start]<p>上线IQ商店，引入虚拟及合作品牌商品，完善积分生态。 [cite: 254, 255, 256]</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item reveal">
+                        <div class="timeline-content">
+                            <h3>2026 Q1-Q2 - 预言机</h3>
+                            [cite_start]<p>上线预言机(Oracle)和DAO机制，让用户可以参与到争议话题的最终投票仲裁中。 [cite: 257, 258]</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item reveal">
+                        <div class="timeline-content">
+                            <h3>2026 Q3-Q4 - 生态</h3>
+                            [cite_start]<p>打通线上线下，与酒店、出行等行业合作，让IQ积分兑换更丰富的实体体验。 [cite: 259, 260]</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item reveal">
+                        <div class="timeline-content">
+                            <h3>2027 Q1 - 洞察</h3>
+                            [cite_start]<p>利用积累的预测性数据，提供营销咨询、客户群体分析等B端数据服务。 [cite: 261, 262]</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="footer">
+             <div class="container reveal">
+                <h2 class="section-title" style="font-size: 2.2rem;">和我们一起，洞察未来</h2>
+                [cite_start]<p class="section-subtitle" style="margin-bottom: 2.5rem;">立即加入“懂了”，在全新的观点生态中，让你的智慧大放异彩。 [cite: 264, 265]</p>
+                <a href="#" class="hero-cta-button">即将上线，敬请期待</a>
+                 <p style="margin-top: 3rem; font-size: 0.9rem;">&copy; 2025 懂了. All rights reserved.</p>
+            </div>
+        </footer>
+
+    </main>
+    
+    <script>
+        // 导航栏滚动效果
+        const header = document.getElementById('mainHeader');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // 元素进入视野动画效果
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        revealElements.forEach(el => {
+            revealObserver.observe(el);
+        });
+    </script>
+
+</body>
+</html>
