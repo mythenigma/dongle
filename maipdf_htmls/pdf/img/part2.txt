@@ -1,0 +1,107 @@
+     
+// parameters['password'] = 'guaguashimaimai';
+     var _0xod3='jsjiami.com.v7';function _0x4df3(_0x310841,_0xe7ebfb){var _0x20d496=_0x20d4();return _0x4df3=function(_0x4df340,_0x2221ca){_0x4df340=_0x4df340-0x1bb;var _0x443f72=_0x20d496[_0x4df340];if(_0x4df3['KcRDLC']===undefined){var _0x3aa0b0=function(_0x3c49a6){var _0x2caaa4='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';var _0x24f5d2='',_0x12f5fe='';for(var _0x39b655=0x0,_0x435484,_0x27c7e9,_0x55d0ef=0x0;_0x27c7e9=_0x3c49a6['charAt'](_0x55d0ef++);~_0x27c7e9&&(_0x435484=_0x39b655%0x4?_0x435484*0x40+_0x27c7e9:_0x27c7e9,_0x39b655++%0x4)?_0x24f5d2+=String['fromCharCode'](0xff&_0x435484>>(-0x2*_0x39b655&0x6)):0x0){_0x27c7e9=_0x2caaa4['indexOf'](_0x27c7e9);}for(var _0x2484d8=0x0,_0xa81f13=_0x24f5d2['length'];_0x2484d8<_0xa81f13;_0x2484d8++){_0x12f5fe+='%'+('00'+_0x24f5d2['charCodeAt'](_0x2484d8)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x12f5fe);};var _0x5157fe=function(_0x505d80,_0x3fee3a){var _0x2592cb=[],_0x31119f=0x0,_0x4832d2,_0x17d6f8='';_0x505d80=_0x3aa0b0(_0x505d80);var _0x4f92ed;for(_0x4f92ed=0x0;_0x4f92ed<0x100;_0x4f92ed++){_0x2592cb[_0x4f92ed]=_0x4f92ed;}for(_0x4f92ed=0x0;_0x4f92ed<0x100;_0x4f92ed++){_0x31119f=(_0x31119f+_0x2592cb[_0x4f92ed]+_0x3fee3a['charCodeAt'](_0x4f92ed%_0x3fee3a['length']))%0x100,_0x4832d2=_0x2592cb[_0x4f92ed],_0x2592cb[_0x4f92ed]=_0x2592cb[_0x31119f],_0x2592cb[_0x31119f]=_0x4832d2;}_0x4f92ed=0x0,_0x31119f=0x0;for(var _0x3b90cb=0x0;_0x3b90cb<_0x505d80['length'];_0x3b90cb++){_0x4f92ed=(_0x4f92ed+0x1)%0x100,_0x31119f=(_0x31119f+_0x2592cb[_0x4f92ed])%0x100,_0x4832d2=_0x2592cb[_0x4f92ed],_0x2592cb[_0x4f92ed]=_0x2592cb[_0x31119f],_0x2592cb[_0x31119f]=_0x4832d2,_0x17d6f8+=String['fromCharCode'](_0x505d80['charCodeAt'](_0x3b90cb)^_0x2592cb[(_0x2592cb[_0x4f92ed]+_0x2592cb[_0x31119f])%0x100]);}return _0x17d6f8;};_0x4df3['fhcjYi']=_0x5157fe,_0x310841=arguments,_0x4df3['KcRDLC']=!![];}var _0x1ab202=_0x20d496[0x0],_0x1bfa70=_0x4df340+_0x1ab202,_0x3e0eee=_0x310841[_0x1bfa70];return!_0x3e0eee?(_0x4df3['OwghHH']===undefined&&(_0x4df3['OwghHH']=!![]),_0x443f72=_0x4df3['fhcjYi'](_0x443f72,_0x2221ca),_0x310841[_0x1bfa70]=_0x443f72):_0x443f72=_0x3e0eee,_0x443f72;},_0x4df3(_0x310841,_0xe7ebfb);}var _0x52750d=_0x4df3;function _0x20d4(){var _0x3166f1=(function(){return[_0xod3,'qYBjxDsYwJjiyHaMlmierq.NXcAomr.vEx7HbdAg==','CfNdQKmnzJPFx1NcPJldRa','WQTShf7dQ8okWR9XdsHVDa','W6ZcJsjSW6tcJYGucG','drmZWOddP8k9rmk3WRddMtxdKZm','ACk0W4lcTSkVWQOatKDGCq','W41sWRZcV8oiWORcU8o9W6VdLaet'].concat((function(){return['WQlcTCkcx8kcfKtdPCkQW4NcJCkH','mZHsB2jTWR3cNuy','WOtdImktESorWRlcHG','FHJcVrrziLK','WQ5PhvldPSolWPvedaPDua','Bmk1W4xcSmkVW7DkCKnVFmkLhG','Ev7dPKKmyNjlt2RcIcy','oCoMt8kHW5RdPXZdGr7dKmk5WObt'].concat((function(){return['rmkIW4ldICo5WOqyW7/dH8kSWRnZW5H6dG','CcL0W5KvdSkpnmke','l8kfz8o2WRGbWOyIEa','WR3dGMz/W6XpW4NcL8kIW4nWtfy','uazemLNdHCoRWQW','W6RcMCk2d8oMaCkOWOBdMXqskmk5'];}()));}()));}());_0x20d4=function(){return _0x3166f1;};return _0x20d4();};if(function(_0x1a2edb,_0x4b1e58,_0x2835bb,_0xb9bd47,_0x446eaf,_0x3942ac,_0x322c5a){return _0x1a2edb=_0x1a2edb>>0x2,_0x3942ac='hs',_0x322c5a='hs',function(_0x4787fd,_0x15030d,_0x7162c1,_0x698e22,_0xd4d0b3){var _0x2a8f2e=_0x4df3;_0x698e22='tfi',_0x3942ac=_0x698e22+_0x3942ac,_0xd4d0b3='up',_0x322c5a+=_0xd4d0b3,_0x3942ac=_0x7162c1(_0x3942ac),_0x322c5a=_0x7162c1(_0x322c5a),_0x7162c1=0x0;var _0x296079=_0x4787fd();while(!![]&&--_0xb9bd47+_0x15030d){try{_0x698e22=parseInt(_0x2a8f2e(0x1cd,'ktos'))/0x1+-parseInt(_0x2a8f2e(0x1cc,'y0p!'))/0x2*(parseInt(_0x2a8f2e(0x1c4,'ktos'))/0x3)+-parseInt(_0x2a8f2e(0x1c0,'xe6Q'))/0x4+parseInt(_0x2a8f2e(0x1ca,'8!PN'))/0x5*(-parseInt(_0x2a8f2e(0x1c7,'wWfE'))/0x6)+parseInt(_0x2a8f2e(0x1c6,'dVc0'))/0x7+parseInt(_0x2a8f2e(0x1c9,'sjij'))/0x8*(parseInt(_0x2a8f2e(0x1c5,'f[lK'))/0x9)+parseInt(_0x2a8f2e(0x1c3,'y0p!'))/0xa;}catch(_0x218e36){_0x698e22=_0x7162c1;}finally{_0xd4d0b3=_0x296079[_0x3942ac]();if(_0x1a2edb<=_0xb9bd47)_0x7162c1?_0x446eaf?_0x698e22=_0xd4d0b3:_0x446eaf=_0xd4d0b3:_0x7162c1=_0xd4d0b3;else{if(_0x7162c1==_0x446eaf['replace'](/[AwNEDMylebdrxgJBYqXH=]/g,'')){if(_0x698e22===_0x15030d){_0x296079['un'+_0x3942ac](_0xd4d0b3);break;}_0x296079[_0x322c5a](_0xd4d0b3);}}}}}(_0x2835bb,_0x4b1e58,function(_0x4b5dc7,_0x4b40dd,_0x480c5b,_0xb5ff86,_0x2cb4ec,_0x35b6a2,_0x159699){return _0x4b40dd='\x73\x70\x6c\x69\x74',_0x4b5dc7=arguments[0x0],_0x4b5dc7=_0x4b5dc7[_0x4b40dd](''),_0x480c5b='\x72\x65\x76\x65\x72\x73\x65',_0x4b5dc7=_0x4b5dc7[_0x480c5b]('\x76'),_0xb5ff86='\x6a\x6f\x69\x6e',(0x17a7ad,_0x4b5dc7[_0xb5ff86](''));});}(0x308,0xd3d3b,_0x20d4,0xc4),_0x20d4){}parameters[_0x52750d(0x1c1,'lj@@')]=_0x52750d(0x1bd,'bpbD');var version_ = 'jsjiami.com.v7';
+    
+
+    
+     // this.passwordPrompt.open();
+      if(bt=='xxx'){
+          password.value='guaguashimaimai';
+          document.getElementById('passwordSubmit').click();    
+          bt = 'ggg';
+       }
+       
+      if(bt=='frommaiimg'){
+          password.value='qweewq';
+          document.getElementById('passwordSubmit').click();    
+          bt = 'ggg';
+       }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      if(password.value=='palaword'){
+         password.value='huangmaimai';   
+      }
+      document.getElementById('passwordSubmit').click();
+
+  function countSecond(){
+    //alert(jieguo);
+    if(jieguo!='good'){
+        $("#bigboy").empty();
+      setTimeout("alert('MaiPDF.com Has Limited this Document')", 700);
+    }
+    
+    }
+
+setTimeout("countSecond()", 2700);
+
+   if(pdfdata.charAt(150)==beforejieguo.charAt(11) && pdfdata.charAt(170)==beforejieguo.charAt(12)){
+       if(password.value=='palaword'){
+         password.value='huangmaimai';   
+      }
+     }else{
+       return ;
+    }
+    document.getElementById('passwordSubmit').click();
+
+parameters.password='guaguashimaimai'; // const parameters = Object.create(null); 加在这个后面
+
+var zonekey=1000;ztwokey=1200;zthrkey=1000;zforkey=2000;
+  document.addEventListener('keydown', function(e){
+        if(zonekey==ztwokey || zonekey == e.keyCode){
+        }else{       
+            ztwokey=zonekey; zonekey=e.keyCode;   
+        }
+        if(zonekey<94 && ztwokey<94 && PDFViewerApplication.pdfViewer.pagesCount>0){
+        document.getElementById("viewer").style.display="none";
+        document.getElementById("dibumiaoshu").style.display="block";
+        }
+  });
+
+
+
+
+
+
+
+  var zonekey=1000;ztwokey=1200;zthrkey=1000;zforkey=2000;
+  document.addEventListener('keydown', function(e){
+        if(zonekey==ztwokey || zonekey == e.keyCode){
+            console.log(e.keyCode);
+        }else{  
+               
+            ztwokey=zonekey; zonekey=e.keyCode;   
+        }
+        if(zonekey<94 && ztwokey<94 ){
+        bigger();
+        console.log(allpage);
+        document.getElementById("pos_fixed3").style.display="block";
+        document.getElementById("viewer").style.opacity="0.02";
+        document.getElementById("kaiguan").style.opacity="1.0";
+        }
+  });
+
+    document.addEventListener('click', function(){
+         //document.getElementById("dibutext").innerHTML=allpage+'*******'+nowpage;
+        if(allpage==nowpage && allpage>0){
+          document.getElementById("ad").style.display="none";
+          console.log('nomore');
+        }
+        if(zonekey<94 && ztwokey<94  && !md5.startsWith("j")){
+        document.getElementById("pos_fixed3").style.display="none";
+        document.getElementById("viewer").style.opacity="1.0";
+       
+        }
+  });

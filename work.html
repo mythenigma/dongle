@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工作面板 | MaiPDF / Flutter</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --hero-start: #1e3a5f;
+      --hero-end: #2c5282;
+      --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      --border-light: #e2e8f0;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; padding-bottom: 3rem; }
+    .hero-work {
+      background: linear-gradient(135deg, var(--hero-start) 0%, var(--hero-end) 100%);
+      color: #fff;
+      padding: 2rem 0 2.5rem;
+      margin-bottom: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .hero-work h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .hero-work .lead { font-size: 0.95rem; opacity: 0.95; }
+    .nav-tabs-work {
+      background: #fff;
+      border-bottom: 2px solid var(--border-light);
+      padding: 0 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .nav-tabs-work .nav-link {
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: #4a5568;
+      font-weight: 500;
+      padding: 0.85rem 1.25rem;
+      margin-bottom: -2px;
+    }
+    .nav-tabs-work .nav-link:hover { color: var(--hero-end); }
+    .nav-tabs-work .nav-link.active {
+      color: var(--hero-end);
+      background: transparent;
+      border-bottom-color: var(--hero-end);
+    }
+    .tab-content-work { padding: 1.5rem 0; }
+    .card-work {
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 1.25rem;
+    }
+    .card-work .card-header {
+      background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+      border-bottom: 1px solid var(--border-light);
+      font-weight: 600;
+      color: #334155;
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px 12px 0 0;
+    }
+    .card-work .card-body { padding: 1.25rem; }
+    .card-work .card-body h2, .card-work .card-body h3 { font-size: 1.1rem; margin-top: 1rem; margin-bottom: 0.5rem; color: #1e293b; }
+    .card-work .card-body h2:first-child, .card-work .card-body h3:first-child { margin-top: 0; }
+    .card-work table { font-size: 0.9rem; }
+    .card-work table th { background: #f1f5f9; color: #475569; }
+    .meta-bar { font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem; }
+    .badge-status { font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <header class="hero-work">
+    <div class="container">
+      <h1><i class="fas fa-clipboard-list me-2"></i>工作面板</h1>
+      <p class="lead">概览 · 改善计划 · 页面精修 · App/后端 · 待办与笔记</p>
+      <p class="meta-bar mb-0">项目：flutter_application_1 / MaiPDF · 更新日期可在此注明</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <ul class="nav nav-tabs nav-tabs-work" id="workTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-overview" data-bs-toggle="tab" data-bs-target="#pane-overview" type="button" role="tab"><i class="fas fa-chart-pie me-1"></i>概览</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-plan" data-bs-toggle="tab" data-bs-target="#pane-plan" type="button" role="tab"><i class="fas fa-list-check me-1"></i>改善计划</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-pages" data-bs-toggle="tab" data-bs-target="#pane-pages" type="button" role="tab"><i class="fas fa-paint-brush me-1"></i>页面精修</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-app" data-bs-toggle="tab" data-bs-target="#pane-app" type="button" role="tab"><i class="fas fa-mobile-alt me-1"></i>App / 后端</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-todo" data-bs-toggle="tab" data-bs-target="#pane-todo" type="button" role="tab"><i class="fas fa-tasks me-1"></i>待办</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-notes" data-bs-toggle="tab" data-bs-target="#pane-notes" type="button" role="tab"><i class="fas fa-sticky-note me-1"></i>笔记</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-dart-doc" data-bs-toggle="tab" data-bs-target="#pane-dart-doc" type="button" role="tab"><i class="fas fa-code me-1"></i>maipdf2026_screen 代码说明</button>
+      </li>
+    </ul>
+
+    <div class="tab-content tab-content-work" id="workTabsContent">
+      <!-- 概览 -->
+      <div class="tab-pane fade show active" id="pane-overview" role="tabpanel">
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-chart-pie me-2"></i>项目现状概况</div>
+          <div class="card-body">
+            <p class="meta-bar">最近更新：可在此写日期 · 项目：flutter_application_1 · 主站：maipdf.com</p>
+            <div class="row g-3 mb-3">
+              <div class="col-6 col-md-4"><div class="p-3 bg-light rounded text-center"><div class="h4 mb-0">1</div><small class="text-muted">Flutter 入口</small></div></div>
+              <div class="col-6 col-md-4"><div class="p-3 bg-light rounded text-center"><div class="h4 mb-0">—</div><small class="text-muted">可索引/页面数</small></div></div>
+              <div class="col-6 col-md-4"><div class="p-3 bg-light rounded text-center"><div class="h4 mb-0">—</div><small class="text-muted">待办项</small></div></div>
+            </div>
+            <h3>本面板说明</h3>
+            <p class="mb-0">用上方标签切换：<strong>改善计划</strong>、<strong>页面精修</strong>、<strong>App/后端</strong>、<strong>待办</strong>、<strong>笔记</strong>。直接编辑 <code>work.html</code> 各 tab 下内容即可，无需再维护多个 .md 文件。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 改善计划 -->
+      <div class="tab-pane fade" id="pane-plan" role="tabpanel">
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-list-check me-2"></i>Phase 与任务</div>
+          <div class="card-body">
+            <p class="meta-bar">可按 Phase 1 / 2 / 3 记录，或与 sendpdfonline 改善计划对齐。</p>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover mb-0">
+                <thead><tr><th>#</th><th>任务</th><th>影响/原因</th><th>状态</th></tr></thead>
+                <tbody>
+                  <tr><td>1</td><td>示例：App 真机调试</td><td>验证上传与生成链接</td><td><span class="badge bg-secondary badge-status">待办</span></td></tr>
+                  <tr><td>2</td><td>示例：后端部署 maipdf2026_backend 修改</td><td>App 提交表单可被接受</td><td><span class="badge bg-success badge-status">已完成</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 页面精修 -->
+      <div class="tab-pane fade" id="pane-pages" role="tabpanel">
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-paint-brush me-2"></i>页面精修进度</div>
+          <div class="card-body">
+            <p class="meta-bar">设计风格：深蓝渐变 Hero + 白色卡片 + Bootstrap 5.3 + Font Awesome 6</p>
+            <p>若本仓库含 sendpdfonline / 文章页，可在此维护精修清单；否则可改为「Flutter 页面/路由」清单。</p>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover mb-0">
+                <thead><tr><th>页面/模块</th><th>图/SVG</th><th>Schema</th><th>状态</th><th>备注</th></tr></thead>
+                <tbody>
+                  <tr><td>lib/screens/maipdf2026_screen</td><td>—</td><td>—</td><td><span class="badge bg-success">已完成</span></td><td>原生 2026 页</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- App / 后端 -->
+      <div class="tab-pane fade" id="pane-app" role="tabpanel">
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-mobile-alt me-2"></i>App 与后端对接</div>
+          <div class="card-body">
+            <h3>上传</h3>
+            <p>Flutter → <code>POST https://maipdf.com/pdf/r2upload.php</code>，字段 <code>file</code>。返回 JSON 的 <code>path</code> 作为 Step 2 的 <code>sender</code>。</p>
+            <h3>生成链接</h3>
+            <p>Flutter → <code>POST maipdf2026_backend.php</code>，带 <code>X-Requested-With: FlutterApp</code>。PHP 端需对 App 请求跳过 <code>uploadedfile</code> Cookie 检查（见 <code>BACKEND_APP_INTEGRATION.md</code> 或本仓库内 backend 修改）。</p>
+            <h3>R2 / 域名</h3>
+            <p>全部在服务端处理，App 不直连 R2，不配置域名。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 待办 -->
+      <div class="tab-pane fade" id="pane-todo" role="tabpanel">
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-tasks me-2"></i>待办事项</div>
+          <div class="card-body">
+            <ul class="mb-0">
+              <li>部署更新后的 <code>maipdf2026_backend.php</code>（含 App 请求放行）</li>
+              <li>真机测试：上传 PDF → 配置 → 生成链接 → 复制/QR</li>
+              <li>（可选）后端为 App 提供 JSON 接口，便于解析结果</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 笔记 -->
+      <div class="tab-pane fade" id="pane-notes" role="tabpanel">
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-sticky-note me-2"></i>笔记与杂项</div>
+          <div class="card-body">
+            <p class="text-muted small">此处记录零散想法、链接、会议要点等。直接改本段 HTML 或追加新卡片即可。</p>
+            <p class="mb-0">示例：终端重启 = 新开终端 <kbd>Ctrl+Shift+`</kbd>；Windows 开发 Flutter 需开「开发人员模式」避免 symlink 报错。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- maipdf2026_screen.dart 代码说明（Dart/Flutter 学习） -->
+      <div class="tab-pane fade" id="pane-dart-doc" role="tabpanel">
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-code me-2"></i>maipdf2026_screen.dart 是干什么的</div>
+          <div class="card-body">
+            <p class="mb-2">这个文件是「在线 MaiPDF 云分享」这一整页的<strong>原生 Flutter 实现</strong>，对应网页版 <code>maipdf2026.html</code>。用户在这里：<strong>① 上传 PDF → ② 设置阅读次数/会话/水印等 → ③ 生成链接和二维码</strong>。下面按「和 PHP 的对应关系」+ 代码结构逐段说明，方便从 PHP 转过来的同学理解。</p>
+            <ul class="small mb-3">
+              <li><strong>文件路径</strong>：<code>lib/screens/maipdf2026/maipdf2026_screen.dart</code></li>
+              <li><strong>入口</strong>：首页点击「Online MaiPDF Cloud Sharing」会 <code>Navigator.push</code> 打开这个页面。</li>
+            </ul>
+
+            <div class="border rounded p-3 bg-light mb-3">
+              <strong>📦 知识点：Flutter 里「一个页面」是什么</strong><br>
+              在 Flutter 里没有「HTML 文件」的概念，一个「页面」就是一个 <strong>Widget</strong>（通常是一个 <code>StatefulWidget</code>）。<code>Maipdf2026Screen</code> 就是一个 Widget，负责整页的 UI 和逻辑，相当于 PHP 里「输出整页 HTML + 处理表单」的那一整套。
+            </div>
+
+            <h3 class="mt-4">1. 文件开头的 import</h3>
+            <pre class="bg-dark text-light p-2 rounded small"><code>import 'dart:async';      // TimeoutException 等
+import 'dart:convert';    // jsonDecode
+import 'package:flutter/material.dart';  // 界面组件
+import 'package:flutter/services.dart'; // Clipboard
+import 'package:http/http.dart' as http; // 发 HTTP 请求，类似 PHP 的 curl/file_get_contents
+import 'package:file_picker/file_picker.dart'; // 选文件
+import 'package:qr_flutter/qr_flutter.dart';   // 画二维码
+import 'package:url_launcher/url_launcher.dart'; // 打开外部链接</code></pre>
+            <p class="small">和 PHP 的 <code>require</code> / <code>include</code> 类似，这里把要用到的库「引进来」。<code>http</code> 用来请求你的 <code>r2upload.php</code> 和 <code>maipdf2026_backend.php</code>。</p>
+
+            <h3 class="mt-4">2. 两个类：StatefulWidget + State</h3>
+            <pre class="bg-dark text-light p-2 rounded small"><code>class Maipdf2026Screen extends StatefulWidget { ... }
+class _Maipdf2026ScreenState extends State&lt;Maipdf2026Screen&gt; { ... }</code></pre>
+            <p class="small">Flutter 里「有状态」的页面要拆成两个类：</p>
+            <ul class="small">
+              <li><strong>StatefulWidget</strong>：只负责「描述这个页面是谁」，本身几乎不写逻辑，只写 <code>createState() => _Maipdf2026ScreenState()</code>。</li>
+              <li><strong>State</strong>：真正的逻辑和状态（变量、网络请求、表单值）都写在 <code>_Maipdf2026ScreenState</code> 里。名字前的下划线 <code>_</code> 表示「只在当前文件内可见」，类似 PHP 的 private。</li>
+            </ul>
+
+            <div class="border rounded p-3 bg-light mb-3">
+              <strong>📦 知识点：为什么分 Widget 和 State</strong><br>
+              Flutter 为了性能会频繁「重建」Widget；如果状态和 Widget 写在一起，重建时状态可能被清空。所以把「会变化的数据」放在 State 里，这样重建界面时状态还在，只是根据状态重新画一遍 UI。
+            </div>
+
+            <p class="small mt-2 mb-2"><strong>Widget 与 State 关系示意：</strong></p>
+            <div class="mb-3 p-3 bg-white border rounded" style="max-width: 520px;">
+              <svg viewBox="0 0 480 220" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif" font-size="13">
+                <defs>
+                  <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon fill="#334155" points="0 0, 8 3, 0 6"/></marker>
+                </defs>
+                <!-- StatefulWidget 框 -->
+                <rect x="20" y="20" width="200" height="70" rx="8" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="2"/>
+                <text x="120" y="48" text-anchor="middle" font-weight="700" fill="#5B21B6">StatefulWidget</text>
+                <text x="120" y="68" text-anchor="middle" fill="#6D28D9">Maipdf2026Screen</text>
+                <text x="120" y="85" text-anchor="middle" font-size="11" fill="#64748B">只负责「是谁」</text>
+                <!-- 箭头 createState() -->
+                <line x1="220" y1="55" x2="258" y2="55" stroke="#334155" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+                <text x="239" y="48" text-anchor="middle" font-size="11" fill="#475569">createState()</text>
+                <!-- State 框 -->
+                <rect x="260" y="20" width="200" height="180" rx="8" fill="#F0FDF4" stroke="#10B981" stroke-width="2"/>
+                <text x="360" y="48" text-anchor="middle" font-weight="700" fill="#047857">State</text>
+                <text x="360" y="68" text-anchor="middle" fill="#059669">_Maipdf2026ScreenState</text>
+                <line x1="270" y1="78" x2="450" y2="78" stroke="#10B981" stroke-width="1"/>
+                <text x="360" y="98" text-anchor="middle" font-size="11" fill="#065F46">状态变量</text>
+                <text x="360" y="116" text-anchor="middle" font-size="10" fill="#64748B">_currentStep, _filePath,</text>
+                <text x="360" y="130" text-anchor="middle" font-size="10" fill="#64748B">_limitController, ...</text>
+                <text x="360" y="152" text-anchor="middle" font-size="11" fill="#065F46">build(context)</text>
+                <text x="360" y="168" text-anchor="middle" font-size="10" fill="#64748B">根据状态「画」出 Widget 树</text>
+                <text x="360" y="192" text-anchor="middle" font-size="10" fill="#64748B">setState() → 重新 build</text>
+              </svg>
+              <p class="small text-muted mb-0 mt-2">上图：StatefulWidget 只负责通过 <code>createState()</code> 创建对应的 State；State 持有所有状态变量，并提供 <code>build()</code> 方法返回当前界面。调用 <code>setState()</code> 后 Flutter 会重新执行 <code>build()</code> 更新界面。</p>
+            </div>
+
+            <h3 class="mt-4">3. 状态变量（相当于 PHP 的 $_SESSION / 表单变量）</h3>
+            <p class="small">下面这些是「这一页要记住的数据」，用户操作会改它们，改完要<strong>让界面更新</strong>就调 <code>setState(() { ... })</code>。</p>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>变量</th><th>含义（对应你 PHP 里的什么）</th></tr></thead>
+              <tbody>
+                <tr><td><code>_baseUrl</code></td><td>接口根地址 <code>https://maipdf.com/pdf</code>，相当于 PHP 里的 base_url</td></tr>
+                <tr><td><code>_currentStep</code></td><td>当前步骤 1/2/3，控制显示「上传 / 配置 / 结果」哪一块</td></tr>
+                <tr><td><code>_uploadStatus</code></td><td>上传区显示的文字（如 "Ready"、"正在上传…"、"上传失败"）</td></tr>
+                <tr><td><code>_filePath</code></td><td>上传成功后后端返回的 path，即 PHP 里发给 backend 的 <code>sender</code></td></tr>
+                <tr><td><code>_fileId</code></td><td>后端返回的 file_id，提交表单时会一起 POST 过去</td></tr>
+                <tr><td><code>_uploading / _submitting</code></td><td>是否正在上传 / 正在提交，用来显示转圈、禁用按钮</td></tr>
+                <tr><td><code>_telegramChatIdController</code></td><td>Telegram 读提醒的 chat_id（对应后端 <code>mailalert</code>，仅数字）；开启「Read Alerts」时必填才有提醒</td></tr>
+                <tr><td><code>_limitController</code> 等</td><td>输入框的「控制器」：既存当前输入值，又绑定到输入框显示（见下）</td></tr>
+                <tr><td><code>_resultLink, _readCode, _modifyCode</code></td><td>第三步显示的链接、读码、改码，从后端返回的 HTML 里解析出来</td></tr>
+              </tbody>
+            </table>
+
+            <div class="border rounded p-3 bg-light mb-3">
+              <strong>📦 知识点：TextEditingController</strong><br>
+              PHP 里表单是 <code>&lt;input name="limit" value="..."&gt;</code>，服务端用 <code>$_POST['limit']</code> 读。Flutter 里没有服务端，输入框的值要自己「拿着」：<code>TextEditingController</code> 就是「拿着」这段文字的对象，<code>controller: _limitController</code> 绑到 <code>TextField</code> 上，用户输入会写进 controller，代码里用 <code>_limitController.text</code> 读、用 <code>_limitController.text = "..."</code> 写。
+            </div>
+
+            <h3 class="mt-4">4. 生命周期：initState 和 dispose</h3>
+            <pre class="bg-dark text-light p-2 rounded small"><code>@override
+void initState() {
+  super.initState();
+  _loadBootstrap();  // 页面一打开就请求 bootstrap 接口
+}
+
+@override
+void dispose() {
+  _limitController.dispose();
+  // ... 其他 controller
+  super.dispose();    // 页面关闭时释放 controller，避免内存泄漏
+}</code></pre>
+            <p class="small"><code>initState</code>：页面第一次出现时执行一次，类似 PHP 里「页面加载时先发一个 AJAX 拉配置」。<br><code>dispose</code>：页面被关闭时执行，要把自己 new 出来的 Controller 都 <code>dispose()</code> 掉。</p>
+
+            <h3 class="mt-4">5. 和服务器打交道的几个方法</h3>
+            <ul class="small">
+              <li><strong>_loadBootstrap()</strong>：GET <code>maipdf2026_backend.php?action=bootstrap</code>，拿 JSON，把网络状态之类写到 <code>_uploadStatus</code>，用于页面顶部提示。</li>
+              <li><strong>_pickAndUpload()</strong>：用 <code>FilePicker</code> 选一个 PDF → 用 <code>http.MultipartRequest</code> POST 到 <code>r2upload.php</code>（和网页里用 FormData 上传一样）→ 解析返回的 JSON 拿 <code>path</code> / <code>file_id</code> → 存到 <code>_filePath</code>、<code>_fileId</code>，并 <code>setState</code> 切到 Step 2。</li>
+              <li><strong>_submitForm()</strong>：把 Step 2 的表单（limit、password、darkmode、zhangai、expiration_ts 等）用 <code>MultipartRequest</code> POST 到 <code>maipdf2026_backend.php</code>，和网页里点「Create」一样；后端返回整页 HTML，再用 <code>_parseResultFromHtml(html)</code> 从 HTML 里抠出链接和码。</li>
+            </ul>
+
+            <div class="border rounded p-3 bg-light mb-3">
+              <strong>📦 知识点：async / await</strong><br>
+              Dart 里发 HTTP 请求是「异步」的，不会卡住界面。写法：<code>Future&lt;void&gt; _pickAndUpload() async { ... await request.send(); ... }</code>。<code>async</code> 表示函数内部可以用 <code>await</code>；<code>await</code> 表示「等这个网络请求结束再往下执行」，类似 JS 的 async/await 或 PHP 里「等 curl 返回再处理」。
+            </div>
+
+            <div class="border rounded p-3 bg-light mb-3">
+              <strong>📦 知识点：setState</strong><br>
+              只要改了 State 里的变量（例如 <code>_uploadStatus = "上传完成"</code>），必须包在 <code>setState(() { ... })</code> 里，Flutter 才会重新执行 <code>build</code> 把界面更新出来。不调 <code>setState</code> 只改变量，界面不会变。
+            </div>
+
+            <h3 class="mt-4">6. 从后端 HTML 里解析结果：_parseResultFromHtml</h3>
+            <p class="small">后端返回的是整页 HTML，不是 JSON。所以用正则从 HTML 里找：</p>
+            <ul class="small">
+              <li>带 <code>id="myInput"</code> 的 input 的 <code>value="..."</code> → 完整链接（注意 PHP 输出时 value 在 id 前面，所以正则先匹配 <code>value="([^"]*)"[^>]*id="myInput"</code>）。</li>
+              <li><code>result-message</code> / <code>result-password</code> 里若有 result-chip 再取读码/改码。</li>
+            </ul>
+            <p class="small">解析出的链接存到 <code>_resultLink</code> 和 <code>_resultLinkController.text</code>，第三步就显示这个链接和二维码。</p>
+
+            <h3 class="mt-4">7. 界面是怎么「画」出来的：build</h3>
+            <p class="small"><code>Widget build(BuildContext context)</code> 是 Flutter 里「描述当前界面长什么样」的方法，每次 <code>setState</code> 后会重新执行。返回的是一个「组件树」：</p>
+            <pre class="bg-dark text-light p-2 rounded small"><code>Scaffold(                    // 整页骨架：AppBar + 内容区
+  appBar: AppBar(...),
+  body: BackgroundDecoration(
+    child: ListView(
+      children: [
+        _buildStepProgress(),   // 顶部 1/2/3 步骤条
+        if (_currentStep >= 1) _buildSection1(),  // 上传区
+        if (_currentStep >= 2) _buildSection2(),  // 配置表单
+        if (_currentStep >= 3) _buildSection3(),  // 链接 + 二维码
+      ],
+    ),
+  ),
+)</code></pre>
+            <p class="small">根据 <code>_currentStep</code> 决定显示哪几块，和 PHP 里 <code>if ($step >= 2) { echo "..." ; }</code> 逻辑一样。</p>
+
+            <div class="border rounded p-3 bg-light mb-3">
+              <strong>📦 知识点：Widget 树</strong><br>
+              Flutter 界面是由一堆「Widget」嵌套出来的树：<code>Scaffold</code> → <code>ListView</code> → <code>_SectionCard</code> → <code>TextField</code> / <code>FilledButton</code> 等。每个 Widget 负责一块区域，有的管布局（如 <code>Row</code>、<code>Column</code>），有的管显示（如 <code>Text</code>、<code>TextField</code>）。没有 HTML/CSS，布局用 <code>Row</code>、<code>Column</code>、<code>padding</code>、<code>SizedBox</code> 等组合出来。
+            </div>
+
+            <h3 class="mt-4">8. 和 PHP 的简要对应</h3>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>PHP / 网页</th><th>Flutter / Dart</th></tr></thead>
+              <tbody>
+                <tr><td>一个 .php 页面</td><td>一个 StatefulWidget + State 类</td></tr>
+                <tr><td>$_POST / $_GET</td><td>request.fields['limit']、Uri.parse(...?action=bootstrap)</td></tr>
+                <tr><td>echo HTML / JSON</td><td>后端仍是 PHP 输出；App 用 http 读 response.body，再 jsonDecode 或正则解析</td></tr>
+                <tr><td>表单 &lt;input&gt;</td><td>TextField + TextEditingController</td></tr>
+                <tr><td>点击按钮提交</td><td>FilledButton 的 onPressed: _submitForm</td></tr>
+                <tr><td>AJAX 后更新 DOM</td><td>setState(() { _resultLink = ... }) 后重新 build</td></tr>
+              </tbody>
+            </table>
+
+            <p class="mt-3 mb-0 small text-muted">把上面几块对照 <code>maipdf2026_screen.dart</code> 看一遍，再对比 <code>maipdf2026.html</code> 和 <code>maipdf2026_backend.php</code>，就能把「网页流程」和「App 流程」对上，方便以后改逻辑或加字段。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

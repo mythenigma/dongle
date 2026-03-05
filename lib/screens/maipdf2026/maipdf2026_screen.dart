@@ -1,0 +1,952 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:file_picker/file_picker.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+/// 原生实现的 MaiPDF Cloud Sharing 页面（对应 maipdf2026.html）
+class Maipdf2026Screen extends StatefulWidget {
+  const Maipdf2026Screen({super.key});
+
+  @override
+  State<Maipdf2026Screen> createState() => _Maipdf2026ScreenState();
+}
+
+class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
+  static const String _baseUrl = 'https://maipdf.com/pdf';
+  static const String _workerApiUrl = 'https://fetch.maipdf.com';
+
+  int _currentStep = 1;
+  String _uploadStatus = 'Network Info';
+  String? _filePath; // sender value after upload (display via _fileNameDisplayController)
+  String? _fileId;
+  bool _uploading = false;
+  bool _submitting = false;
+  String? _submitError;
+
+  // Step 2 form
+  final _limitController = TextEditingController(text: '');
+  final _sessionSecondsController = TextEditingController(text: '');
+  bool _dynamicWatermark = false;
+  String _viewType = 'straight'; // straight, obstacle, topen
+  String _expirationPreset = '';
+  final _expirationCustomDaysController = TextEditingController(text: '');
+  bool _enableTelegram = false;
+  final _telegramChatIdController = TextEditingController(text: '');
+  String? _telegramBindToken; // 从 /tg/issue 拿到，用于 /tg/status 取 chat_id
+  String _telegramStatusText = 'Telegram: Not linked';
+  bool _telegramStatusLoading = false;
+  bool _enableEmailValidation = false;
+  final _emailAddressesController = TextEditingController(text: '');
+  final _fileNameDisplayController = TextEditingController(text: 'File');
+  final _resultLinkController = TextEditingController();
+
+  // Step 3 result
+  String? _resultLink;
+  String? _readCode;
+  String? _modifyCode;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBootstrap();
+  }
+
+  Future<void> _loadBootstrap() async {
+    try {
+      final r = await http.get(
+        Uri.parse('$_baseUrl/maipdf2026_backend.php?action=bootstrap'),
+        headers: {'Cache-Control': 'no-store', 'X-Requested-With': 'FlutterApp'},
+      );
+      if (r.statusCode == 200) {
+        final data = jsonDecode(r.body) as Map<String, dynamic>?;
+        if (data != null && data['status'] == 'ok') {
+          setState(() {
+            _uploadStatus = (data['ip'] as String?) ?? 'Ready';
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  void _showUploadError(String message) {
+    if (!mounted) return;
+    setState(() {
+      _uploadStatus = message;
+      _uploading = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade700,
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  }
+
+  /// 与网页一致：先请求 /tg/issue 拿到 token 和 deep_link，再打开 t.me/maipdfbot?start=TOKEN
+  Future<void> _openTelegramBind() async {
+    setState(() {
+      _telegramStatusText = 'Telegram: Requesting…';
+      _telegramStatusLoading = true;
+    });
+    try {
+      final r = await http.post(
+        Uri.parse('$_workerApiUrl/tg/issue'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'ip': '', 'ua': 'Flutter'}),
+      );
+      if (!mounted) return;
+      if (r.statusCode != 200) {
+        setState(() {
+          _telegramStatusText = 'Telegram: Token failed';
+          _telegramStatusLoading = false;
+        });
+        return;
+      }
+      final data = jsonDecode(r.body) as Map<String, dynamic>?;
+      final token = data?['token'] as String?;
+      final deepLink = data?['deep_link'] as String?;
+      final link = (deepLink != null && deepLink.isNotEmpty)
+          ? deepLink
+          : (token != null && token.isNotEmpty ? 'https://t.me/maipdfbot?start=$token' : 'https://t.me/maipdfbot');
+      if (token != null && token.isNotEmpty) {
+        setState(() {
+          _telegramBindToken = token;
+          _telegramStatusText = 'Telegram: Open bot → send /start → tap Get chat_id';
+          _telegramStatusLoading = false;
+        });
+        await launchUrl(Uri.parse(link));
+      } else {
+        setState(() {
+          _telegramStatusText = 'Telegram: Not linked';
+          _telegramStatusLoading = false;
+        });
+        await launchUrl(Uri.parse(link));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _telegramStatusText = 'Telegram: Token failed';
+        _telegramStatusLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Telegram: $e'), backgroundColor: Colors.red.shade700),
+      );
+    }
+  }
+
+  /// 调用 /tg/status 用当前 token 取 chat_id，填到输入框
+  Future<void> _fetchTelegramChatId() async {
+    String? token = _telegramBindToken;
+    if (token == null || token.isEmpty) {
+      await _openTelegramBind();
+      return;
+    }
+    setState(() {
+      _telegramStatusText = 'Telegram: Checking…';
+      _telegramStatusLoading = true;
+    });
+    try {
+      final r = await http.post(
+        Uri.parse('$_workerApiUrl/tg/status'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'token': token}),
+      );
+      if (!mounted) return;
+      final data = jsonDecode(r.body) as Map<String, dynamic>?;
+      final status = data?['status'] as String?;
+      final chatId = data?['chat_id'];
+      if (status == 'ok' && chatId != null && chatId.toString().trim().isNotEmpty) {
+        final id = chatId.toString().trim().replaceAll(RegExp(r'\D'), '');
+        if (id.isNotEmpty) {
+          _telegramChatIdController.text = id;
+          setState(() {
+            _telegramBindToken = null;
+            _telegramStatusText = 'Telegram: Linked ($id)';
+            _telegramStatusLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('chat_id 已填入'), backgroundColor: Colors.green),
+            );
+          }
+          return;
+        }
+      }
+      setState(() {
+        _telegramStatusText = status == 'pending' ? 'Telegram: Not linked (send /start in bot)' : 'Telegram: Not linked';
+        _telegramStatusLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _telegramStatusText = 'Telegram: Status failed';
+        _telegramStatusLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Get chat_id: $e'), backgroundColor: Colors.red.shade700),
+      );
+    }
+  }
+
+  Future<void> _pickAndUpload() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      allowMultiple: false,
+    );
+    if (result == null || result.files.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('未选择文件')),
+        );
+      }
+      return;
+    }
+    final file = result.files.single;
+    // Web 上访问 file.path 会抛错，必须先取 bytes；移动端用 path 更省内存
+    String? path;
+    try {
+      path = file.path;
+    } catch (_) {
+      path = null;
+    }
+    final bytes = file.bytes;
+
+    if ((path == null || path.isEmpty) && (bytes == null || bytes.isEmpty)) {
+      _showUploadError('无法读取文件');
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _uploading = true;
+      _uploadStatus = '正在上传…';
+    });
+
+    try {
+      final uri = Uri.parse('$_baseUrl/r2upload.php');
+      final request = http.MultipartRequest('POST', uri);
+      request.headers['X-Requested-With'] = 'FlutterApp';
+
+      if (path != null && path.isNotEmpty) {
+        request.files.add(await http.MultipartFile.fromPath('file', path, filename: file.name));
+      } else if (bytes != null && bytes.isNotEmpty) {
+        request.files.add(http.MultipartFile.fromBytes('file', bytes, filename: file.name));
+      } else {
+        _showUploadError('无法读取文件');
+        return;
+      }
+
+      final streamed = await request.send().timeout(
+        const Duration(seconds: 90),
+        onTimeout: () => throw TimeoutException('上传超时'),
+      );
+      final response = await http.Response.fromStream(streamed);
+      final body = response.body;
+
+      if (!mounted) return;
+      if (response.statusCode != 200) {
+        _showUploadError('上传失败: HTTP ${response.statusCode}');
+        return;
+      }
+
+      String? pathValue;
+      try {
+        final j = jsonDecode(body) as Map<String, dynamic>?;
+        if (j != null) {
+          if (j['status'] == 'error') {
+            final msg = j['message'] as String? ?? 'Unknown error';
+            _showUploadError('服务器返回: $msg');
+            return;
+          }
+          pathValue = j['path'] as String? ?? j['filepath'] as String?;
+          _fileId = j['file_id'] as String?;
+        }
+      } catch (_) {}
+      if (pathValue == null && body.contains('"path"')) {
+        final match = RegExp(r'"path"\s*:\s*"([^"]+)"').firstMatch(body);
+        if (match != null) pathValue = match.group(1);
+      }
+      if (pathValue == null || pathValue.isEmpty) {
+        _showUploadError('服务器未返回文件路径');
+        return;
+      }
+
+      _fileNameDisplayController.text = pathValue;
+      if (!mounted) return;
+      setState(() {
+        _uploading = false;
+        _uploadStatus = '上传完成';
+        _filePath = pathValue;
+        _currentStep = 2;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('上传成功'), backgroundColor: Colors.green),
+        );
+      }
+    } on TimeoutException catch (_) {
+      _showUploadError('上传超时，请检查网络后重试');
+    } catch (e) {
+      _showUploadError('上传失败: $e');
+    }
+  }
+
+  /// 与网页 JS 一致：根据预设算出过期时间戳（秒）。0 或空表示永久。
+  int _computeExpirationTs() {
+    final preset = _expirationPreset;
+    if (preset.isEmpty || preset == 'unlimited') return 0;
+    double days = 0;
+    if (preset == '1h') {
+      days = 1 / 24;
+    } else if (preset == '3h') {
+      days = 3 / 24;
+    } else if (preset == '24h') {
+      days = 1;
+    } else if (preset == '5d') {
+      days = 5;
+    } else if (preset == 'custom') {
+      final n = double.tryParse(_expirationCustomDaysController.text.trim());
+      if (n != null && n > 0) days = n;
+    }
+    if (days <= 0) return 0;
+    final now = DateTime.now().toUtc();
+    final expiry = now.add(Duration(microseconds: (days * 24 * 60 * 60 * 1000000).round()));
+    return expiry.millisecondsSinceEpoch ~/ 1000;
+  }
+
+  Future<void> _submitForm() async {
+    if (_filePath == null || _filePath!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please upload a file first.')),
+      );
+      return;
+    }
+    final limitStr = _limitController.text.trim();
+    final passwordStr = _sessionSecondsController.text.trim();
+    final limit = int.tryParse(limitStr) ?? 1;
+    final password = int.tryParse(passwordStr) ?? 30;
+    if (limit < 1 || password < 30) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Access limit must be ≥1, session seconds ≥30.')),
+      );
+      return;
+    }
+    setState(() {
+      _submitting = true;
+      _submitError = null;
+    });
+    try {
+      final uri = Uri.parse('$_baseUrl/maipdf2026_backend.php');
+      final request = http.MultipartRequest('POST', uri);
+      request.headers['X-Requested-With'] = 'FlutterApp';
+      request.fields['sender'] = _filePath!;
+      if (_fileId != null) request.fields['file_id'] = _fileId!;
+      request.fields['limit'] = limit.toString();
+      request.fields['password'] = password.toString();
+      request.fields['darkmode'] = _dynamicWatermark ? 'yes' : '';
+      request.fields['zhangai'] = _viewType;
+      final expTs = _computeExpirationTs();
+      request.fields['expiration_ts'] = expTs > 0 ? expTs.toString() : '';
+      if (_expirationPreset == 'custom') {
+        request.fields['expiration_day'] = _expirationCustomDaysController.text.trim();
+      } else {
+        request.fields['expiration_day'] = '';
+      }
+      request.fields['enableTelegramAlert'] = _enableTelegram ? 'yes' : '';
+      if (_enableTelegram) {
+        final chatId = _telegramChatIdController.text.trim().replaceAll(RegExp(r'\D'), '');
+        request.fields['mailalert'] = chatId;
+      }
+      request.fields['enableEmailValidation'] = _enableEmailValidation ? 'yes' : '';
+      if (_enableEmailValidation) {
+        request.fields['emailAddresses'] = _emailAddressesController.text.trim();
+      }
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+      final html = response.body;
+      if (response.statusCode != 200) {
+        setState(() {
+          _submitting = false;
+          _submitError = 'Server error: ${response.statusCode}';
+        });
+        return;
+      }
+      _parseResultFromHtml(html);
+      setState(() {
+        _submitting = false;
+        _currentStep = 3;
+      });
+    } catch (e) {
+      setState(() {
+        _submitting = false;
+        _submitError = 'Request failed: $e';
+      });
+    }
+  }
+
+  void _parseResultFromHtml(String html) {
+    String? linkFull;
+    // 后端 PHP 输出顺序是 value 在前、id="myInput" 在后，先按此匹配
+    final inputMatchValueFirst = RegExp(r'value="([^"]*)"[^>]*id="myInput"').firstMatch(html);
+    if (inputMatchValueFirst != null) linkFull = inputMatchValueFirst.group(1)?.trim();
+    if (linkFull == null) {
+      final inputMatch = RegExp(r'id="myInput"[^>]*value="([^"]*)"', dotAll: true).firstMatch(html);
+      if (inputMatch != null) linkFull = inputMatch.group(1)?.trim();
+    }
+    if (linkFull == null) {
+      final inputMatch2 = RegExp(r'id="myInput"[^>]*>[\s\S]*?value="([^"]*)"').firstMatch(html);
+      linkFull = inputMatch2?.group(1)?.trim();
+    }
+    if (linkFull == null && html.contains('myInput')) {
+      final idIdx = html.indexOf('id="myInput"');
+      if (idIdx != -1) {
+        final tagStart = html.lastIndexOf('<input', idIdx);
+        if (tagStart != -1) {
+          final valueIdx = html.indexOf('value="', tagStart);
+          if (valueIdx != -1 && valueIdx < idIdx) {
+            final start = valueIdx + 7;
+            final end = html.indexOf('"', start);
+            if (end > start) linkFull = html.substring(start, end).trim();
+          }
+        }
+      }
+    }
+    String? readCode;
+    final msgMatch = RegExp(r'result-message[^>]*>[\s\S]*?result-chip[^>]*>([^<]+)<').firstMatch(html);
+    if (msgMatch != null) readCode = msgMatch.group(1)?.trim();
+    String? modifyCode;
+    final passMatch = RegExp(r'result-password[\s\S]*?result-chip[^>]*>([^<]+)<').firstMatch(html);
+    if (passMatch != null) modifyCode = passMatch.group(1)?.trim();
+    final link = (linkFull != null && linkFull.isNotEmpty) ? linkFull : 'https://maipdf.com';
+    _resultLinkController.text = link;
+    setState(() {
+      _resultLink = link;
+      _readCode = readCode ?? '—';
+      _modifyCode = modifyCode ?? '—';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('MaiPDF Cloud Sharing'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: BackgroundDecoration(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          children: [
+            _buildStepProgress(),
+            const SizedBox(height: 24),
+            if (_currentStep >= 1) _buildSection1(),
+            if (_currentStep >= 2) _buildSection2(),
+            if (_currentStep >= 3) _buildSection3(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStepProgress() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.98),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5DFF0)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _stepChip(1, 'Upload', _currentStep >= 1, _currentStep > 1),
+            const SizedBox(width: 12),
+            _stepChip(2, 'Configure', _currentStep >= 2, _currentStep > 2),
+            const SizedBox(width: 12),
+            _stepChip(3, 'Share', _currentStep >= 3, false),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _stepChip(int step, String label, bool active, bool completed) {
+    final isActive = active && !completed;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: isActive
+            ? const LinearGradient(
+                colors: [Color(0xFF5B21B6), Color(0xFF8B5CF6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        color: completed ? const Color(0xFF10B981) : (isActive ? null : const Color(0xFFF5F3FF)),
+        borderRadius: BorderRadius.circular(50),
+        border: Border.all(
+          color: isActive || completed ? const Color(0xFF8B5CF6) : const Color(0xFFDDD6FE),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: completed ? const Color(0xFF10B981) : (isActive ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFE5DFF0)),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '$step',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: completed ? Colors.white : (isActive ? Colors.white : const Color(0xFF718096)),
+                fontSize: 14,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: isActive || completed ? FontWeight.w600 : FontWeight.w500,
+              color: completed || isActive ? Colors.white : const Color(0xFF718096),
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection1() {
+    final isError = _uploadStatus.contains('失败') || _uploadStatus.contains('超时') || _uploadStatus.contains('无法') || _uploadStatus.contains('unavailable');
+    return _SectionCard(
+      title: '1: Upload File',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            _uploadStatus,
+            style: TextStyle(
+              color: isError ? Colors.red.shade700 : const Color(0xFF718096),
+              fontSize: 14,
+              fontWeight: isError ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+          if (_uploading) ...[
+            const SizedBox(height: 10),
+            const LinearProgressIndicator(backgroundColor: Color(0xFFE5DFF0)),
+          ],
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: _uploading ? null : _pickAndUpload,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFFAF5FF),
+                    const Color(0xFFF5F3FF),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFF8B5CF6), width: 2),
+              ),
+              child: _uploading
+                  ? const Column(
+                      children: [
+                        SizedBox(
+                          width: 36,
+                          height: 36,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        SizedBox(height: 12),
+                        Text('正在上传…', style: TextStyle(fontWeight: FontWeight.w500)),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        Icon(Icons.cloud_upload_outlined, size: 48, color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(height: 12),
+                        const Text('Choose File', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 4),
+                        Text('Or tap to pick PDF / image', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection2() {
+    return _SectionCard(
+      title: '2: Set Up Reading Times and Session',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _fileNameDisplayController,
+            readOnly: true,
+            textAlign: TextAlign.center,
+            decoration: const InputDecoration(
+              labelText: 'File',
+              border: OutlineInputBorder(),
+              filled: true,
+            ),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _limitController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Access Limit (Number of Opens)',
+              hintText: 'Number of Opens',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _sessionSecondsController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Each Session (seconds)',
+              hintText: 'in (seconds)',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Icon(Icons.lock_outline, size: 20, color: Colors.grey[700]),
+              const SizedBox(width: 8),
+              const Text('Dynamic Watermark', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Spacer(),
+              Switch(
+                value: _dynamicWatermark,
+                onChanged: (v) => setState(() => _dynamicWatermark = v),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            initialValue: _viewType,
+            decoration: const InputDecoration(
+              labelText: 'View Type',
+              border: OutlineInputBorder(),
+            ),
+            items: const [
+              DropdownMenuItem(value: 'straight', child: Text('SecureView')),
+              DropdownMenuItem(value: 'obstacle', child: Text('FenceView')),
+              DropdownMenuItem(value: 'topen', child: Text('Unrestricted')),
+            ],
+            onChanged: (v) => setState(() => _viewType = v ?? 'straight'),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            initialValue: _expirationPreset,
+            decoration: const InputDecoration(
+              labelText: 'Expiration',
+              border: OutlineInputBorder(),
+            ),
+            items: const [
+              DropdownMenuItem(value: '', child: Text('Select duration')),
+              DropdownMenuItem(value: '1h', child: Text('1 hour')),
+              DropdownMenuItem(value: '3h', child: Text('3 hours')),
+              DropdownMenuItem(value: '24h', child: Text('24 hours')),
+              DropdownMenuItem(value: '5d', child: Text('5 days')),
+              DropdownMenuItem(value: 'custom', child: Text('Custom days')),
+              DropdownMenuItem(value: 'unlimited', child: Text('Unlimited')),
+            ],
+            onChanged: (v) => setState(() => _expirationPreset = v ?? ''),
+          ),
+          if (_expirationPreset == 'custom') ...[
+            const SizedBox(height: 8),
+            TextField(
+              controller: _expirationCustomDaysController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                hintText: 'Custom days',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Icon(Icons.notifications_outlined, size: 20, color: Colors.grey[700]),
+              const SizedBox(width: 8),
+              const Text('Read Alerts (Telegram)', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Spacer(),
+              Switch(
+                value: _enableTelegram,
+                onChanged: (v) => setState(() => _enableTelegram = v),
+              ),
+            ],
+          ),
+          if (_enableTelegram) ...[
+            const SizedBox(height: 8),
+            Text(
+              _telegramStatusText,
+              style: TextStyle(
+                fontSize: 13,
+                color: _telegramStatusLoading ? Colors.grey : (_telegramStatusText.contains('Linked') ? Colors.green.shade700 : Colors.grey[700]),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _telegramChatIdController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                hintText: 'chat_id (auto after Add bot + /start + Get chat_id)',
+                labelText: 'Chat ID',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.chat_bubble_outline),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                FilledButton.tonalIcon(
+                  onPressed: _telegramStatusLoading ? null : _openTelegramBind,
+                  icon: const Icon(Icons.open_in_new, size: 18),
+                  label: const Text('Add bot'),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: _telegramStatusLoading ? null : _fetchTelegramChatId,
+                  icon: _telegramStatusLoading
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.refresh, size: 18),
+                  label: const Text('Get chat_id'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Add bot → 在 Telegram 里发 /start → 点「Get chat_id」',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 12),
+          ],
+          Row(
+            children: [
+              Icon(Icons.email_outlined, size: 20, color: Colors.grey[700]),
+              const SizedBox(width: 8),
+              const Text('Email Verification', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Spacer(),
+              Switch(
+                value: _enableEmailValidation,
+                onChanged: (v) => setState(() => _enableEmailValidation = v),
+              ),
+            ],
+          ),
+          if (_enableEmailValidation) ...[
+            const SizedBox(height: 8),
+            TextField(
+              controller: _emailAddressesController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Enter up to 50 email addresses, separated by commas',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+          const SizedBox(height: 24),
+          if (_submitError != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(_submitError!, style: const TextStyle(color: Colors.red)),
+            ),
+          FilledButton.icon(
+            onPressed: _submitting ? null : _submitForm,
+            icon: _submitting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : const Icon(Icons.link),
+            label: Text(_submitting ? 'Generating...' : 'Create Secure Link'),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              backgroundColor: const Color(0xFF8B5CF6),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection3() {
+    final link = _resultLink ?? 'https://maipdf.com';
+    return _SectionCard(
+      title: '3: URL and QR Created',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SelectableText(link, style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _resultLinkController,
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton.filled(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: link));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Link copied')),
+                  );
+                },
+                icon: const Icon(Icons.copy),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text('Read Code: $_readCode', style: const TextStyle(fontSize: 13)),
+          const SizedBox(height: 4),
+          Text('Modify Code: $_modifyCode', style: const TextStyle(fontSize: 13)),
+          const SizedBox(height: 20),
+          Center(
+            child: QrImageView(
+              data: link,
+              version: QrVersions.auto,
+              size: 140,
+              backgroundColor: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Center(child: Text('Scan QR Code To Read', style: TextStyle(fontSize: 12, color: Colors.grey))),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton.icon(
+                onPressed: () => launchUrl(Uri.parse('https://maipdf.com/pdf/hahachange.php')),
+                icon: const Icon(Icons.edit, size: 18),
+                label: const Text('Change File'),
+              ),
+              const SizedBox(width: 12),
+              TextButton.icon(
+                onPressed: () => launchUrl(Uri.parse('https://maipdf.com/getresult.html')),
+                icon: const Icon(Icons.list_alt, size: 18),
+                label: const Text('Access Records'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _limitController.dispose();
+    _sessionSecondsController.dispose();
+    _expirationCustomDaysController.dispose();
+    _telegramChatIdController.dispose();
+    _emailAddressesController.dispose();
+    _fileNameDisplayController.dispose();
+    _resultLinkController.dispose();
+    super.dispose();
+  }
+}
+
+class BackgroundDecoration extends StatelessWidget {
+  const BackgroundDecoration({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFF5F3FF), Color(0xFFEDE9FE)],
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFFE5DFF0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF5B21B6),
+            ),
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
+    );
+  }
+}

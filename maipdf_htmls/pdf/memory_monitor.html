@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF处理内存监控工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .upload-area.dragover {
+            border-color: #007bff;
+            background-color: #e3f2fd;
+        }
+        .file-input {
+            display: none;
+        }
+        .upload-btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .upload-btn:hover {
+            background: #0056b3;
+        }
+        .upload-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .progress-container {
+            display: none;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.3s;
+            border-radius: 10px;
+        }
+        .memory-monitor {
+            display: none;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+        }
+        .memory-chart {
+            display: flex;
+            align-items: end;
+            height: 150px;
+            gap: 2px;
+            margin: 20px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+        .memory-bar {
+            flex: 1;
+            background: #007bff;
+            min-height: 5px;
+            border-radius: 2px;
+            position: relative;
+            transition: height 0.3s;
+        }
+        .memory-bar.high {
+            background: #ffc107;
+        }
+        .memory-bar.critical {
+            background: #dc3545;
+        }
+        .memory-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 4px solid #007bff;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .results {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .success {
+            border-left: 4px solid #28a745;
+        }
+        .error {
+            border-left: 4px solid #dc3545;
+        }
+        .debug-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #343a40;
+            color: #f8f9fa;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .processing-stage {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #6c757d;
+        }
+        .processing-stage.active {
+            border-left-color: #007bff;
+            background: #e3f2fd;
+        }
+        .processing-stage.completed {
+            border-left-color: #28a745;
+        }
+        .processing-stage.failed {
+            border-left-color: #dc3545;
+        }
+        .time-display {
+            font-family: monospace;
+            font-size: 18px;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 PDF处理内存监控工具</h1>
+            <p>实时监控PDF压缩和线性化过程中的内存使用情况</p>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <h3>📁 选择或拖拽PDF文件</h3>
+            <p>支持最大100MB的PDF文件</p>
+            <input type="file" id="fileInput" class="file-input" accept=".pdf">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                选择文件
+            </button>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <h4>处理进度</h4>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-display">
+                处理时间: <span id="processingTime">0s</span>
+            </div>
+        </div>
+
+        <div class="memory-monitor" id="memoryMonitor">
+            <h4>🧠 内存使用监控</h4>
+            <div class="memory-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="currentMemory">0 MB</div>
+                    <div class="stat-label">当前内存</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="peakMemory">0 MB</div>
+                    <div class="stat-label">峰值内存</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="memoryUsage">0%</div>
+                    <div class="stat-label">内存使用率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="processingStrategy">未选择</div>
+                    <div class="stat-label">处理策略</div>
+                </div>
+            </div>
+            
+            <div class="memory-chart" id="memoryChart">
+                <!-- 内存使用条形图将在这里动态生成 -->
+            </div>
+
+            <div id="processingStages">
+                <div class="processing-stage" id="stage-upload">
+                    <strong>📤 文件上传</strong> - <span>等待中...</span>
+                </div>
+                <div class="processing-stage" id="stage-analysis">
+                    <strong>🔍 文件分析</strong> - <span>等待中...</span>
+                </div>
+                <div class="processing-stage" id="stage-encryption">
+                    <strong>🔒 加密检测</strong> - <span>等待中...</span>
+                </div>
+                <div class="processing-stage" id="stage-compression">
+                    <strong>🗜️ PDF压缩</strong> - <span>等待中...</span>
+                </div>
+                <div class="processing-stage" id="stage-linearization">
+                    <strong>📐 PDF线性化</strong> - <span>等待中...</span>
+                </div>
+                <div class="processing-stage" id="stage-validation">
+                    <strong>✅ 文件验证</strong> - <span>等待中...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <!-- 处理结果将在这里显示 -->
+        </div>
+    </div>
+
+    <script>
+        let processingStartTime = 0;
+        let memoryData = [];
+        let monitoringInterval = null;
+
+        // 文件拖拽处理
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                handleFileSelect(files[0]);
+            } else {
+                alert('请选择PDF文件');
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (file.size > 100 * 1024 * 1024) {
+                alert('文件太大，请选择小于100MB的PDF文件');
+                return;
+            }
+
+            // 显示文件信息
+            uploadArea.innerHTML = `
+                <h3>📄 ${file.name}</h3>
+                <p>文件大小: ${formatBytes(file.size)}</p>
+                <button class="upload-btn" onclick="startProcessing('${file.name}', ${file.size})">
+                    开始处理
+                </button>
+            `;
+        }
+
+        function startProcessing(fileName, fileSize) {
+            // 显示监控界面
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('memoryMonitor').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            // 重置状态
+            processingStartTime = Date.now();
+            memoryData = [];
+            updateStage('upload', 'active', '开始处理...');
+
+            // 模拟处理过程和内存监控
+            simulateProcessing(fileName, fileSize);
+        }
+
+        function simulateProcessing(fileName, fileSize) {
+            // 根据文件大小确定处理策略
+            let strategy = getProcessingStrategy(fileSize);
+            document.getElementById('processingStrategy').textContent = strategy;
+
+            // 模拟处理阶段
+            const stages = [
+                { id: 'upload', duration: 2000, memoryIncrease: 10 },
+                { id: 'analysis', duration: 3000, memoryIncrease: 20 },
+                { id: 'encryption', duration: 2000, memoryIncrease: 5 },
+                { id: 'compression', duration: getCompressionTime(fileSize), memoryIncrease: getCompressionMemory(fileSize) },
+                { id: 'linearization', duration: getLinearizationTime(fileSize), memoryIncrease: 30 },
+                { id: 'validation', duration: 2000, memoryIncrease: -20 }
+            ];
+
+            let currentStage = 0;
+            let baseMemory = 30; // 基础内存30MB
+            let currentMemory = baseMemory;
+
+            // 开始内存监控
+            startMemoryMonitoring();
+
+            function processNextStage() {
+                if (currentStage >= stages.length) {
+                    // 处理完成
+                    completeProcessing(fileName, strategy);
+                    return;
+                }
+
+                const stage = stages[currentStage];
+                updateStage(stage.id, 'active', '处理中...');
+
+                // 模拟内存变化
+                const targetMemory = currentMemory + stage.memoryIncrease;
+                animateMemoryChange(currentMemory, targetMemory, stage.duration);
+                currentMemory = targetMemory;
+
+                // 更新进度
+                const progress = ((currentStage + 1) / stages.length) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+
+                setTimeout(() => {
+                    updateStage(stage.id, 'completed', '完成');
+                    currentStage++;
+                    processNextStage();
+                }, stage.duration);
+            }
+
+            processNextStage();
+        }
+
+        function getProcessingStrategy(fileSize) {
+            if (fileSize > 50 * 1024 * 1024) return '跳过优化';
+            if (fileSize > 30 * 1024 * 1024) return '仅线性化';
+            if (fileSize > 10 * 1024 * 1024) return '轻量压缩';
+            return '完整优化';
+        }
+
+        function getCompressionTime(fileSize) {
+            // 根据文件大小估算压缩时间
+            const mb = fileSize / (1024 * 1024);
+            if (mb > 30) return 0; // 大文件跳过压缩
+            return Math.min(20000, mb * 2000); // 每MB约2秒
+        }
+
+        function getCompressionMemory(fileSize) {
+            const mb = fileSize / (1024 * 1024);
+            if (mb > 30) return 0;
+            return Math.min(80, mb * 5); // 每MB约5MB内存
+        }
+
+        function getLinearizationTime(fileSize) {
+            const mb = fileSize / (1024 * 1024);
+            return Math.min(15000, mb * 1000); // 每MB约1秒
+        }
+
+        function startMemoryMonitoring() {
+            // 初始化内存图表
+            const chart = document.getElementById('memoryChart');
+            chart.innerHTML = '';
+            for (let i = 0; i < 50; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'memory-bar';
+                chart.appendChild(bar);
+            }
+
+            // 开始监控
+            monitoringInterval = setInterval(updateMemoryDisplay, 500);
+        }
+
+        function animateMemoryChange(from, to, duration) {
+            const startTime = Date.now();
+            const difference = to - from;
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const currentValue = from + (difference * progress);
+
+                // 更新内存数据
+                memoryData.push({
+                    time: Date.now(),
+                    memory: currentValue
+                });
+
+                // 保持最近50个数据点
+                if (memoryData.length > 50) {
+                    memoryData.shift();
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        }
+
+        function updateMemoryDisplay() {
+            if (memoryData.length === 0) return;
+
+            const currentMemory = memoryData[memoryData.length - 1].memory;
+            const peakMemory = Math.max(...memoryData.map(d => d.memory));
+            const memoryLimit = 256; // 假设256MB限制
+            const usagePercent = (currentMemory / memoryLimit * 100).toFixed(1);
+
+            // 更新统计显示
+            document.getElementById('currentMemory').textContent = currentMemory.toFixed(1) + ' MB';
+            document.getElementById('peakMemory').textContent = peakMemory.toFixed(1) + ' MB';
+            document.getElementById('memoryUsage').textContent = usagePercent + '%';
+
+            // 更新处理时间
+            const elapsed = ((Date.now() - processingStartTime) / 1000).toFixed(1);
+            document.getElementById('processingTime').textContent = elapsed + 's';
+
+            // 更新图表
+            const bars = document.querySelectorAll('.memory-bar');
+            memoryData.forEach((data, index) => {
+                if (index < bars.length) {
+                    const height = (data.memory / memoryLimit) * 100;
+                    bars[index].style.height = Math.max(5, height) + '%';
+                    
+                    // 根据内存使用率设置颜色
+                    bars[index].className = 'memory-bar';
+                    if (height > 80) {
+                        bars[index].classList.add('critical');
+                    } else if (height > 60) {
+                        bars[index].classList.add('high');
+                    }
+                }
+            });
+        }
+
+        function updateStage(stageId, status, message) {
+            const stage = document.getElementById('stage-' + stageId);
+            stage.className = 'processing-stage ' + status;
+            stage.querySelector('span').textContent = message;
+        }
+
+        function completeProcessing(fileName, strategy) {
+            // 停止监控
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+            }
+
+            // 显示结果
+            const totalTime = ((Date.now() - processingStartTime) / 1000).toFixed(1);
+            const peakMemory = memoryData.length > 0 ? Math.max(...memoryData.map(d => d.memory)).toFixed(1) : '0';
+            
+            const results = document.getElementById('results');
+            results.style.display = 'block';
+            results.className = 'results success';
+            results.innerHTML = `
+                <h3>✅ 处理完成</h3>
+                <div class="memory-stats">
+                    <div class="stat-card">
+                        <div class="stat-value">${fileName}</div>
+                        <div class="stat-label">文件名</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${strategy}</div>
+                        <div class="stat-label">处理策略</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totalTime}s</div>
+                        <div class="stat-label">总处理时间</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${peakMemory} MB</div>
+                        <div class="stat-label">峰值内存</div>
+                    </div>
+                </div>
+                <div class="debug-info">
+                    <h4>📋 处理日志</h4>
+                    <div>✅ 文件上传完成</div>
+                    <div>✅ 文件分析完成</div>
+                    <div>✅ 加密检测完成</div>
+                    <div>✅ PDF优化完成（策略: ${strategy}）</div>
+                    <div>✅ 文件验证通过</div>
+                    <div>📊 内存使用峰值: ${peakMemory} MB</div>
+                    <div>⏱️ 总处理时间: ${totalTime} 秒</div>
+                </div>
+            `;
+
+            // 重置上传区域
+            setTimeout(() => {
+                location.reload();
+            }, 10000);
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

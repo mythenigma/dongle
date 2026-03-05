@@ -1,0 +1,5185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    <!-- SEO Meta -->
+    <title>MaiPDF - Online PDF Sharing & QR Code Generator</title>
+    <meta name="keywords" content="online pdf share, pdf qr code, free pdf online reader, pdf view only, pdf online link, maipdf">
+    <meta name="description" content="Share PDFs online instantly. Generate links and QR codes for easy viewing, with options to allow or block download and printing. 100% free and no account required.">
+    <meta name="author" content="MaiPDF">
+
+    <!-- Social Media (OG & Twitter) -->
+    <meta property="og:title" content="MaiPDF - Secure & Free Online PDF Sharing">
+    <meta property="og:description" content="Generate links & QR codes for PDFs. View online, no download needed. Choose to allow or block download & print. Free and simple to use.">
+    <meta property="og:image" content="https://article.maipdf.com/maipdf-images/share_pdf_wordwide.png">
+    <meta property="og:url" content="https://maipdf.com/pdf/maipdf.php">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- External Stylesheets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    
+    <!-- Bootstrap & jQuery -->
+ 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.7/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.7/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Dropzone -->
+    <script src="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/dropzone.js"></script>
+    <script>
+      if (typeof Dropzone !== "undefined") {
+        Dropzone.autoDiscover = false;
+      }
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/dropzone.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/basic.css">
+    
+    <!-- QR Code -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9224406325142860" crossorigin="anonymous"></script>
+    
+    <!-- Main CSS (inlined, same as maipdfcn style strategy) -->
+    <style id="maipdf2026-main-css">
+/* Basic Reset & Defaults */
+:root {
+    --primary: #8e44ad;
+    --primary-light: #9b59b6;
+    --primary-dark: #7d3c98;
+    --secondary: #3498db;
+    --accent: #2ecc71;
+    --text-dark: #2c3e50;
+    --text-light: #ecf0f1;
+    --bg-light: #f9f9f9;
+    --bg-dark: #2c3e50;
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+    --shadow-inset: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+    --gradient-primary: linear-gradient(135deg, #2c3e50, #4b7bec);
+    --gradient-button: linear-gradient(to right, #114FEE, #C835F8);
+    --danger: #e74c3c;
+    --transition-fast: all 0.3s ease;
+    --transition-medium: all 0.5s ease;
+    --transition-slow: all 0.8s ease;
+    --border-radius-sm: 5px;
+    --border-radius-md: 10px;
+    --border-radius-lg: 20px;
+    --border-radius-full: 50%;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    line-height: 1.6 !important;
+    color: #2d3748 !important;
+    overflow-x: hidden !important;
+    background: linear-gradient(to bottom, #f5f3ff 0%, #ede9fe 100%) !important;
+    scroll-behavior: smooth !important;
+}
+
+.container {
+    max-width: 1280px !important;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Logo */
+.logo {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #8e44ad; /* Fallback color */
+}
+.logo-main {
+    margin-bottom: 20px;
+    background: linear-gradient(45deg, #3498db, #9b59b6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 10px 25px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, border-color 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-feature-start {
+    background: linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    margin-top: 16px !important;
+    font-size: 0.85rem !important;
+    padding: 10px 16px !important;
+    border-radius: 10px !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    box-shadow: 0 3px 10px rgba(139,92,246, 0.3) !important;
+}
+
+.btn-feature-start:hover {
+    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%) !important;
+    color: #fff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(139,92,246, 0.4) !important;
+}
+
+.telegram-refresh.linked-success {
+    background: linear-gradient(135deg, #065f46 0%, #047857 100%) !important;
+    color: #ecfdf5 !important;
+    box-shadow: 0 0 0 rgba(6,95,70,0.0), 0 10px 24px rgba(4,120,87,0.35) !important;
+    animation: telegram-linked-pulse 0.95s ease-in-out infinite !important;
+    cursor: default !important;
+}
+
+.telegram-refresh.linked-success:hover {
+    transform: none !important;
+    box-shadow: 0 0 0 rgba(6,95,70,0.0), 0 10px 24px rgba(4,120,87,0.35) !important;
+}
+
+.telegram-status-mini {
+    font-size: 0.72rem !important;
+    line-height: 1.15 !important;
+    opacity: 0.72 !important;
+    margin-top: 6px !important;
+    margin-bottom: 4px !important;
+}
+
+.telegram-hint-mini {
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 4px !important;
+    opacity: 0.78 !important;
+}
+
+@keyframes telegram-linked-pulse {
+    0% {
+        opacity: 0.88;
+        box-shadow: 0 0 0 0 rgba(4,120,87,0.40), 0 8px 18px rgba(4,120,87,0.22);
+    }
+    50% {
+        opacity: 1;
+        box-shadow: 0 0 0 10px rgba(4,120,87,0.14), 0 14px 28px rgba(4,120,87,0.45);
+    }
+    100% {
+        opacity: 0.88;
+        box-shadow: 0 0 0 0 rgba(4,120,87,0.0), 0 8px 18px rgba(4,120,87,0.22);
+    }
+}
+
+.setting-cta {
+    margin-top: auto !important;
+    padding-top: 16px !important;
+}
+
+.generate-progress {
+    margin-top: 10px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: #5b21b6 !important;
+    background: rgba(124,58,237,0.08) !important;
+    border: 1px solid rgba(124,58,237,0.22) !important;
+    border-radius: 10px !important;
+    padding: 8px 10px !important;
+    display: none;
+}
+
+.generate-progress.is-error {
+    color: #b91c1c !important;
+    background: rgba(239,68,68,0.08) !important;
+    border-color: rgba(239,68,68,0.28) !important;
+}
+
+.generate-progress.is-success {
+    color: #065f46 !important;
+    background: rgba(16,185,129,0.1) !important;
+    border-color: rgba(16,185,129,0.28) !important;
+}
+
+#2step.compact-status {
+    font-size: clamp(1.15rem, 4.4vw, 1.65rem) !important;
+    line-height: 1.22 !important;
+    letter-spacing: 0 !important;
+    margin-bottom: 10px !important;
+}
+
+.cta-glow {
+    position: relative !important;
+    box-shadow: 0 0 0 rgba(139,92,246, 0.0) !important;
+    animation: cta-pulse 2.2s ease-in-out infinite !important;
+}
+
+.cta-glow::after {
+    content: "" !important;
+    position: absolute !important;
+    inset: -2px !important;
+    border-radius: 12px !important;
+    background: linear-gradient(120deg, rgba(255,255,255,0.15), rgba(255,255,255,0.0), rgba(255,255,255,0.2)) !important;
+    opacity: 0.8 !important;
+    pointer-events: none !important;
+    mix-blend-mode: screen !important;
+}
+
+@keyframes cta-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(139,92,246, 0.25);
+    }
+    50% {
+        box-shadow: 0 0 18px 6px rgba(139,92,246, 0.35);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(139,92,246, 0.25);
+    }
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, #2c3e50, #4b7bec);
+    color: #fff;
+    text-align: center;
+    padding: 120px 0 100px 0;
+    position: relative;
+    overflow: hidden;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hero action buttons */
+.hero-action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.btn-hero-primary {
+    background: linear-gradient(to right, #2ecc71, #27ae60);
+    color: #fff;
+    border: 1px solid transparent;
+    padding: 12px 28px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.4);
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-hero-primary:hover {
+    background: #fff;
+    color: #2ecc71;
+    border: 1px solid #2ecc71;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(46, 204, 113, 0.5);
+}
+
+.btn-hero-secondary {
+    background: linear-gradient(to right, #3498db, #2980b9);
+    color: #fff;
+    border: 1px solid transparent;
+    padding: 12px 28px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-hero-secondary:hover {
+    background: #fff;
+    color: #3498db;
+    border: 1px solid #3498db;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(52, 152, 219, 0.5);
+}
+
+.btn-hero-primary::before,
+.btn-hero-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transform: translateX(-100%);
+    transition: 0.6s;
+}
+.btn-hero-tertiary {
+    background: linear-gradient(to right, #e74c3c, #c0392b);
+    color: #fff;
+    border: 1px solid transparent;
+    padding: 12px 28px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-hero-tertiary:hover {
+    background: #fff;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(231, 76, 60, 0.5);
+}
+
+.btn-hero-tertiary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transform: translateX(-100%);
+    transition: 0.6s;
+}
+
+.btn-hero-tertiary:hover::before {
+    transform: translateX(100%);
+}
+.btn-hero-primary:hover::before,
+.btn-hero-secondary:hover::before {
+    transform: translateX(100%);
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.hero-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 8%), 
+                      radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 8%),
+                      radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 8%),
+                      radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 8%);
+    opacity: 0.6;
+}
+
+.animated-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        -45deg,
+        rgba(44, 62, 80, 0.8),
+        rgba(52, 73, 94, 0.8),
+        rgba(75, 123, 236, 0.8),
+        rgba(142, 68, 173, 0.8)
+    );
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    z-index: -1;
+}
+
+.floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.float-element {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+}
+
+.float-element:nth-child(1) {
+    top: 20%;
+    left: 10%;
+    animation: float-animation 25s infinite ease-in-out;
+}
+
+.float-element:nth-child(2) {
+    bottom: 30%;
+    right: 15%;
+    width: 8px;
+    height: 8px;
+    animation: float-animation 20s infinite ease-in-out reverse;
+}
+
+.float-element:nth-child(3) {
+    top: 50%;
+    left: 70%;
+    width: 10px;
+    height: 10px;
+    animation: float-animation 30s infinite ease-in-out;
+}
+
+.float-element:nth-child(4) {
+    top: 70%;
+    left: 30%;
+    width: 4px;
+    height: 4px;
+    animation: float-animation 15s infinite ease-in-out reverse;
+}
+
+.float-element:nth-child(5) {
+    top: 25%;
+    left: 80%;
+    animation: float-animation 18s infinite ease-in-out;
+}
+
+@keyframes float-animation {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    25% {
+        transform: translate(100px, 50px) rotate(90deg);
+    }
+    50% {
+        transform: translate(50px, 100px) rotate(180deg);
+    }
+    75% {
+        transform: translate(-50px, 50px) rotate(270deg);
+    }
+    100% {
+        transform: translate(0, 0) rotate(360deg);
+    }
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.hero-section .container {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-section h1 {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.hero-section p {
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+}
+
+/* User Authentication Area */
+.user-auth-area {
+    margin-top: 20px;
+}
+
+.auth-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.arrow-down {
+    display: block;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #fff;
+    margin: 5px auto;
+    animation: slide 2s infinite;
+}
+
+@keyframes slide {
+    0% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translateY(10px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+}
+
+.arrow-down + .arrow-down {
+    margin-top: 5px;
+}
+
+/* Breadcrumb Container - 娣＄传鑹蹭富棰?*/
+.breadcrumb-container {
+    background: linear-gradient(to bottom, #faf5ff 0%, #f5f3ff 100%) !important;
+    padding: 12px 0 !important;
+    border-bottom: 1px solid #e5dff0 !important;
+}
+
+.breadcrumb {
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    font-size: 0.85rem !important;
+}
+
+.breadcrumb-item {
+    display: inline-block !important;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    display: none !important;
+}
+
+.breadcrumb-item a {
+    color: #8b5cf6 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    background: rgba(139,92,246,0.08) !important;
+    transition: all 0.2s !important;
+}
+
+.breadcrumb-item a:hover {
+    background: rgba(139,92,246,0.15) !important;
+    color: #5b21b6 !important;
+}
+
+/* Step Progress Indicator - 鏇寸簿鑷?*/
+@keyframes stickyAnimation {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(0); }
+}
+
+.step-progress-container {
+    background: rgba(255,255,255,0.98) !important;
+    padding: 24px 0 !important;
+    border-bottom: 1px solid #e5dff0 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    box-shadow: 0 2px 12px rgba(139,92,246,0.08) !important;
+    backdrop-filter: blur(12px) !important;
+    transition: all 0.3s ease !important;
+}
+
+.step-progress-container.sticky-active {
+    padding: 12px 0;
+    background-color: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    animation: stickyAnimation 0.3s ease-in-out;
+}
+
+.step-progress {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 24px !important;
+    position: relative !important;
+    max-width: 600px !important;
+    margin: 0 auto !important;
+    align-items: center !important;
+}
+
+.step-progress::before {
+    display: none !important;
+}
+
+.sticky-active .step-progress::before {
+    top: 19px;
+}
+
+.step-item {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 10px 18px !important;
+    border-radius: 50px !important;
+    background: #f5f3ff !important;
+    border: 1px solid #ddd6fe !important;
+    transition: all 0.3s ease !important;
+}
+
+.step-number {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    background: #e5dff0 !important;
+    color: #718096 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    transition: all 0.3s ease !important;
+    flex-shrink: 0 !important;
+}
+
+.sticky-active .step-number {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.step-text {
+    color: #718096 !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    white-space: nowrap !important;
+}
+
+.sticky-active .step-text {
+    font-size: 0.8rem;
+}
+
+.step-item.active {
+    background: linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%) !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 12px rgba(139,92,246,0.3) !important;
+}
+
+.step-item.active .step-number {
+    background: rgba(255,255,255,0.25) !important;
+    color: #fff !important;
+}
+
+.step-item.active .step-text {
+    color: #fff !important;
+    font-weight: 600 !important;
+}
+
+.step-item.completed {
+    background: #d1fae5 !important;
+    border-color: #10b981 !important;
+}
+
+.step-item.completed .step-number {
+    background: #10b981 !important;
+    color: white !important;
+}
+
+/* Features Section - Upload: 鐧借壊鑳屾櫙 + 鐧借壊瀹瑰櫒 */
+.features-section {
+    background: #fff !important;
+    padding: 56px 0 !important;
+    text-align: center !important;
+    position: relative !important;
+}
+
+.features-section .container {
+    background: linear-gradient(to bottom, #faf5ff 0%, #f5f3ff 100%) !important;
+    padding: 40px 36px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 20px rgba(139,92,246,.12) !important;
+    border: 1px solid #e5dff0 !important;
+}
+
+.features-section h2,
+.why-choose-us-section h2,
+.cta-section h2 {
+    font-size: 1.5rem !important;
+    margin-bottom: 12px !important;
+    color: #5b21b6 !important;
+    font-weight: 700 !important;
+    position: relative !important;
+    display: block !important;
+    text-align: center !important;
+    padding-bottom: 18px !important;
+    letter-spacing: -0.3px !important;
+}
+
+.features-section h2::after,
+.why-choose-us-section h2::after,
+.cta-section h2::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 70px !important;
+    height: 4px !important;
+    background: linear-gradient(90deg, #5b21b6 0%, #8b5cf6 100%) !important;
+    border-radius: 2px !important;
+}
+
+.upload-container {
+    max-width: 640px !important;
+    margin: 0 auto !important;
+}
+
+.upload-container .title {
+    font-size: 0.85rem !important;
+    color: #6b7280 !important;
+    margin-bottom: 12px !important;
+}
+
+/* Dropzone Styling */
+.dropzone {
+    border: 2px dashed #8b5cf6 !important;
+    border-radius: 14px !important;
+    background: linear-gradient(to bottom, #faf5ff 0%, #f5f3ff 100%) !important;
+    padding: 32px !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+    color: #6b7280 !important;
+    transition: all 0.3s ease !important;
+    min-height: 180px !important;
+}
+
+.dropzone:hover {
+    background: linear-gradient(to bottom, #f5f3ff 0%, #ede9fe 100%) !important;
+    border-color: #7c3aed !important;
+}
+
+.dz-message {
+    margin: 2em 0;
+}
+
+/* Section highlight animation for transitions */
+@keyframes highlightSection {
+    0% { box-shadow: 0 0 0 0 rgba(142, 68, 173, 0.2); }
+    70% { box-shadow: 0 0 0 20px rgba(142, 68, 173, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(142, 68, 173, 0); }
+}
+
+.highlight-section {
+    animation: highlightSection 1.5s ease-in-out;
+    border-radius: var(--border-radius-md);
+}
+
+/* Settings Section: 鐧借壊鑳屾櫙 + 娣＄传鑹插鍣?+ 鐧借壊鍗＄墖 */
+.why-choose-us-section {
+    background: #fff !important;
+    padding: 56px 0 !important;
+    position: relative !important;
+}
+
+.why-choose-us-section .container {
+    max-width: 1320px !important;
+    background: linear-gradient(to bottom, #faf5ff 0%, #f5f3ff 100%) !important;
+    padding: 40px 36px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 20px rgba(139,92,246,.12) !important;
+    border: 1px solid #e5dff0 !important;
+}
+
+.why-choose-us-section .form-control {
+    border: 1px solid #e5dff0 !important;
+    background: #fff !important;
+}
+
+/* File name input at top of step 2 */
+.why-choose-us-section > .container > form > input[name="sender"],
+.why-choose-us-section input#name {
+    max-width: 580px !important;
+    margin: 0 auto 24px auto !important;
+    display: block !important;
+    font-size: 0.88rem !important;
+    padding: 12px 18px !important;
+    border-radius: 12px !important;
+    border: 1px solid #ddd6fe !important;
+    background: #faf5ff !important;
+    color: #2d3748 !important;
+    text-align: center !important;
+}
+
+.settings-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 18px !important;
+    margin-top: 32px !important;
+}
+
+.setting-box {
+    background: linear-gradient(to bottom, #f5f3ff 0%, #ede9fe 100%) !important;
+    padding: 22px 16px !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 8px rgba(139,92,246,.08) !important;
+    text-align: center !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border: 1px solid rgba(139,92,246,.12) !important;
+}
+
+.setting-box:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 4px 16px rgba(139,92,246,.2) !important;
+    border-color: rgba(139,92,246,.25) !important;
+}
+
+.setting-icon {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 auto 12px auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%) !important;
+}
+
+.setting-icon .fa-icon,
+.setting-icon i {
+    font-size: 1.2rem !important;
+    color: #8b5cf6 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+    width: auto !important;
+    height: auto !important;
+    border-radius: 0 !important;
+}
+
+.setting-box h3 {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+    margin-bottom: 12px !important;
+    line-height: 1.3 !important;
+}
+
+.setting-box .form-control {
+    font-size: 0.8rem !important;
+    padding: 9px 12px !important;
+    border-radius: 8px !important;
+    border: 1px solid #ddd6fe !important;
+    background: #fff !important;
+}
+
+#limit,
+input[name="password"] {
+    width: 90% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+#expiration_preset {
+    width: 90% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.setting-box .form-control:focus {
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 0 0 3px rgba(139,92,246,.1) !important;
+    outline: none !important;
+}
+
+.setting-box .form-check-label {
+    font-size: 0.8rem !important;
+    color: #4a5568 !important;
+    font-weight: 400 !important;
+}
+
+.form-check {
+    margin-bottom: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.inline-option-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+}
+
+.inline-option-row.access-limit-row h3 {
+    margin: 0 !important;
+}
+
+.inline-option-row.access-limit-row .help-toggle {
+    transform: translateY(2px) !important;
+}
+
+.inline-option-row .form-check {
+    margin: 0 !important;
+}
+
+.inline-option-row .form-check-label {
+    margin: 0 !important;
+}
+
+.toggle-switch {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    position: relative !important;
+    user-select: none !important;
+}
+
+.toggle-switch input {
+    position: absolute !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+.toggle-track {
+    width: 46px !important;
+    height: 24px !important;
+    background: #d9ccff !important;
+    border-radius: 999px !important;
+    box-shadow: inset 0 0 0 2px #c4b5fd !important;
+    display: inline-block !important;
+    position: relative !important;
+    transition: background 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.toggle-track::after {
+    content: "" !important;
+    position: absolute !important;
+    width: 20px !important;
+    height: 20px !important;
+    top: 2px !important;
+    left: 2px !important;
+    background: #fff !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+    transition: transform 0.2s ease !important;
+}
+
+.toggle-switch input:checked + .toggle-track {
+    background: #7c4dff !important;
+    box-shadow: inset 0 0 0 2px #6d28d9 !important;
+}
+
+.toggle-switch input:checked + .toggle-track::after {
+    transform: translateX(22px) !important;
+}
+
+.toggle-switch input:focus + .toggle-track {
+    box-shadow: inset 0 0 0 2px #6d28d9, 0 0 0 3px rgba(124,77,255,0.25) !important;
+}
+
+.toggle-switch input:disabled + .toggle-track {
+    background: #e5e7eb !important;
+    box-shadow: inset 0 0 0 2px #d1d5db !important;
+}
+
+.toggle-switch input:disabled + .toggle-track::after {
+    box-shadow: none !important;
+}
+
+.toggle-text {
+    font-size: 0.8rem !important;
+    color: #4a5568 !important;
+    font-weight: 500 !important;
+}
+
+.toggle-switch input:disabled ~ .toggle-text {
+    color: #9ca3af !important;
+}
+
+.view-type-label {
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    color: #4b5563 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    white-space: nowrap !important;
+}
+
+.view-type-label.no-text {
+    font-size: 0 !important;
+    letter-spacing: 0 !important;
+}
+
+.view-type-icons {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin-right: 6px !important;
+    color: #8b5cf6 !important;
+    font-size: 0.78rem !important;
+}
+
+.view-type-icons i {
+    line-height: 1 !important;
+}
+
+.view-type-row {
+    display: grid !important;
+    grid-template-columns: auto 1fr auto !important;
+    gap: 8px !important;
+    align-items: center !important;
+    margin: 10px 0 6px 0 !important;
+}
+
+.view-type-row .view-type-select {
+    justify-self: center !important;
+}
+
+.view-type-help-toggle {
+    margin-left: 2px !important;
+}
+
+.view-type-help {
+    margin-top: 8px !important;
+    font-size: 0.74rem !important;
+}
+
+.view-type-select {
+    font-size: 0.85rem !important;
+    border-radius: 12px !important;
+    border: 1px solid #ddd6fe !important;
+    padding: 6px 12px !important;
+    background-color: #fff !important;
+    min-height: 40px !important;
+    line-height: 1.2 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.view-type-select:focus {
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 0 0 3px rgba(139,92,246,.12) !important;
+}
+
+.help-toggle {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 50% !important;
+    background: #ede9fe !important;
+    color: #6b46c1 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    border: 1px solid #ddd6fe !important;
+    user-select: none !important;
+    padding: 0 !important;
+}
+
+.help-toggle:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(139,92,246,.2) !important;
+}
+
+.help-collapse {
+    margin: 8px 4px 0 !important;
+    padding: 8px 10px !important;
+    background: rgba(255,255,255,0.8) !important;
+    border: 1px solid #ddd6fe !important;
+    border-radius: 10px !important;
+    font-size: 0.78rem !important;
+    color: #4a5568 !important;
+    text-align: left !important;
+}
+
+.form-check-input {
+    width: 18px !important;
+    height: 18px !important;
+    border: 2px solid #ddd6fe !important;
+    cursor: pointer !important;
+}
+
+.form-check-input:checked {
+    background-color: #8b5cf6 !important;
+    border-color: #8b5cf6 !important;
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(139,92,246,.15) !important;
+    outline: none !important;
+}
+
+.protection-box .form-check-label {
+    font-size: 0.74rem !important;
+}
+
+.protection-box .help-collapse {
+    font-size: 0.74rem !important;
+}
+
+.expiration-row h3 {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.expiration-icon {
+    color: #8b5cf6 !important;
+    font-size: 0.9rem !important;
+}
+
+.expiration-summary-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    margin-top: 8px !important;
+}
+
+.expiration-result {
+    font-size: 0.78rem !important;
+    color: #6b7280 !important;
+    line-height: 1.2 !important;
+}
+
+.expiration-timezone .timezone-row {
+    display: grid;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+}
+
+.expiration-timezone .form-select {
+    padding: 8px 12px !important;
+    font-size: 0.86rem !important;
+    border-radius: 12px !important;
+    min-height: 38px !important;
+}
+
+.expiration-local {
+    margin-top: 6px !important;
+    font-size: 0.78rem !important;
+    color: #6b7280 !important;
+}
+
+
+.setting-box .mt-4 h3 {
+    font-size: 0.85rem !important;
+    margin-bottom: 8px !important;
+}
+
+.setting-box .mt-4 .fa-icon,
+.setting-box .mt-4 i {
+    font-size: 0.95rem !important;
+    width: auto !important;
+    height: auto !important;
+    background: none !important;
+    padding: 0 !important;
+    margin-right: 6px !important;
+    color: #8b5cf6 !important;
+}
+
+/* Section Divider */
+.section-divider {
+    text-align: center !important;
+    padding: 18px 0 !important;
+    background: #fff !important;
+    border-top: 1px solid #e5dff0 !important;
+    border-bottom: 1px solid #e5dff0 !important;
+}
+
+.section-divider p {
+    color: #9ca3af !important;
+    font-size: 0.8rem !important;
+    font-style: italic !important;
+    margin: 0 !important;
+}
+
+/* CTA Section - Results: 鐧借壊鑳屾櫙 + 娣＄传鑹插鍣?(缁熶竴椋庢牸) */
+.cta-section {
+    background: #fff !important;
+    padding: 56px 0 !important;
+    text-align: center !important;
+    position: relative !important;
+}
+
+.cta-box {
+    max-width: 1000px !important;
+    margin: 0 auto !important;
+    padding: 40px 36px !important;
+    background: linear-gradient(to bottom, #faf5ff 0%, #f5f3ff 100%) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 20px rgba(139,92,246,.12) !important;
+    border: 1px solid #e5dff0 !important;
+}
+
+.cta-section h2,
+.cta-box h2 {
+    color: #5b21b6 !important;
+    margin-bottom: 12px !important;
+    font-size: 1.35rem !important;
+    font-weight: 600 !important;
+    position: relative !important;
+    display: block !important;
+    padding-bottom: 16px !important;
+}
+
+.cta-section h2::after,
+.cta-box h2::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 70px !important;
+    height: 4px !important;
+    background: linear-gradient(90deg, #5b21b6 0%, #8b5cf6 100%) !important;
+    border-radius: 2px !important;
+}
+
+.results-grid {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 32px !important;
+    margin-top: 28px !important;
+    align-items: start !important;
+}
+
+.result-box {
+    padding: 24px !important;
+    background: #fff !important;
+    border: 1px solid #e5dff0 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 8px rgba(139,92,246,.08) !important;
+    transition: all 0.3s ease !important;
+}
+
+.result-box h3 {
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+    margin-bottom: 14px !important;
+    word-break: break-all !important;
+}
+
+.cta-box h5,
+.cta-box h6 {
+    font-size: 0.85rem !important;
+    color: #718096 !important;
+    font-weight: 500 !important;
+    margin-top: 10px !important;
+}
+
+.link-copy-area {
+    margin: 16px 0 !important;
+}
+
+.link-copy-area input,
+.link-copy-area .form-control {
+    background: #fff !important;
+    border: 1px solid #ddd6fe !important;
+    color: #2d3748 !important;
+    padding: 11px 14px !important;
+    border-radius: 10px !important;
+    margin-bottom: 12px !important;
+    width: 100% !important;
+    font-size: 0.85rem !important;
+}
+
+.link-copy-area input:focus,
+.link-copy-area .form-control:focus {
+    outline: none !important;
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 0 0 3px rgba(139,92,246,.15) !important;
+}
+
+.qr-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 12px !important;
+    background: #fff !important;
+    border: 1px solid #ddd6fe !important;
+    border-radius: 12px !important;
+    margin: 0 auto !important;
+    box-shadow: 0 2px 8px rgba(139,92,246,.1) !important;
+    min-width: 140px !important;
+    min-height: 140px !important;
+}
+
+#qrcode img {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+}
+
+/* Footer Section - 鎭㈠涓哄師鐗堟牱寮忥紙绱摑娓愬彉銆佹祬鑹插瓧锛?*/
+.footer-section {
+    background: linear-gradient(to right, #114FEE, #C835F8);
+    color: #ccc;
+    padding: 50px 0;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.footer-left {
+    flex-basis: 60%;
+}
+
+.footer-left .logo {
+    color: #eee;
+    margin-bottom: 15px;
+    font-size: 1.8rem;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+}
+
+.footer-left p {
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.footer-social {
+    margin-top: 15px;
+    display: flex;
+    gap: 15px;
+}
+
+.social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+}
+
+.footer-right {
+    flex-basis: 30%;
+}
+
+.contact-info {
+    margin-bottom: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.contact-info h4 {
+    color: #fff;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.contact-info p {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.contact-info i {
+    margin-right: 10px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.contact-note {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7) !important;
+    margin-top: 10px;
+}
+
+@media (max-width: 992px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    .footer-left, .footer-right {
+        flex-basis: 100%;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .footer-right {
+        margin-top: 20px;
+        text-align: center;
+    }
+    .footer-social, .language-switcher {
+        justify-content: center;
+    }
+}
+
+/* Back to Top Button - 绱壊涓婚 */
+.back-to-top {
+    position: fixed !important;
+    bottom: 28px !important;
+    right: 28px !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%) !important;
+    color: #fff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 16px rgba(139,92,246,0.3) !important;
+    z-index: 100 !important;
+}
+
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.back-to-top:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 20px rgba(139,92,246,0.4) !important;
+    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+    .settings-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+    
+    .setting-box {
+        padding: 24px 20px !important;
+    }
+    
+    .setting-box h3 {
+        font-size: 1rem !important;
+    }
+    
+    .setting-icon {
+        width: 56px !important;
+        height: 56px !important;
+    }
+    
+    .setting-icon .fa-icon,
+    .setting-icon i {
+        font-size: 1.4rem !important;
+    }
+    
+    .btn-feature-start {
+        font-size: 0.95rem !important;
+        padding: 12px 20px !important;
+    }
+    
+    .results-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+
+    .view-type-row {
+        grid-template-columns: auto 1fr auto !important;
+        column-gap: 6px !important;
+    }
+
+    .view-type-row .view-type-select {
+        width: 100% !important;
+        max-width: 100% !important;
+        justify-self: stretch !important;
+    }
+
+    .view-type-row .view-type-help-toggle {
+        justify-self: end !important;
+    }
+    
+    .cta-box {
+        padding: 32px 24px !important;
+    }
+    
+    .result-box {
+        padding: 20px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section h1 {
+        font-size: 1.8rem;
+    }
+    
+    .hero-section p {
+        font-size: 1rem;
+    }
+    
+    .fa-icon {
+        font-size: 1.8rem;
+        padding: 12px;
+    }
+    
+    .why-choose-us-section {
+        padding: 60px 0;
+    }
+      /* Responsive styling for hero buttons */
+    .hero-action-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 0 15px;
+    }
+      /* Make hero buttons consistent on mobile */
+    .btn-hero-primary,
+    .btn-hero-secondary,
+    .btn-hero-tertiary {
+        width: 100%;
+        max-width: 280px;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-size: 1rem;
+        display: flex;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+      /* Ensure copy button has consistent styling on mobile */
+    .btn-copy {
+        width: 100%;
+        max-width: 280px;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-size: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Make feature buttons consistent on mobile */
+    .btn-feature-start {
+        width: 100%;
+        max-width: 280px;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-size: 1rem;
+        display: flex;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Adjust action buttons container for mobile */
+    .action-buttons-container {
+        padding: 12px 10px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .action-title {
+        font-size: 1rem;
+    }
+    
+    .btn-hero-primary,
+    .btn-hero-secondary {
+        width: 100%;
+        max-width: 280px;
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+    
+    /* Responsive step indicator */
+    .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .step-text {
+        font-size: 0.8rem;
+    }
+    
+    .sticky-active .step-number {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .sticky-active .step-text {
+        font-size: 0.7rem;
+    }
+    
+    .step-progress::before {
+        top: 19px;
+    }
+    
+    .sticky-active .step-progress::before {
+        top: 17px;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section {
+        padding: 80px 0 60px;
+    }
+    
+    .hero-section h1 {
+        font-size: 1.6rem;
+    }
+    
+    .auth-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .hero-action-buttons {
+        margin-top: 20px;
+    }
+    
+    .btn-hero-primary,
+    .btn-hero-secondary {
+        font-size: 0.9rem;
+        padding: 8px 16px;
+    }
+    
+    .features-section h2, 
+    .why-choose-us-section h2, 
+    .cta-section h2 {
+        font-size: 1.7rem;
+    }
+    
+    .back-to-top {
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+/* Action Buttons Styling in Results Section */
+.action-buttons-container {
+    margin-top: 24px !important;
+    padding: 20px !important;
+    background: rgba(139,92,246,0.04) !important;
+    border-radius: 12px !important;
+    border: 1px solid #e5dff0 !important;
+}
+
+.action-title {
+    color: #5b21b6 !important;
+    margin-bottom: 14px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+}
+
+.action-buttons {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    margin-top: 12px !important;
+    flex-wrap: wrap !important;
+}
+
+.action-buttons .btn,
+.action-buttons .btn-feature-start {
+    min-width: 140px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.85rem !important;
+    padding: 10px 18px !important;
+}
+
+@media (max-width: 576px) {
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        margin: 5px 0;
+    }
+    
+    .cta-box {
+        padding: 20px 15px;
+    }
+    
+    .cta-section h2 {
+        font-size: 1.5rem;
+    }
+    
+    .result-box {
+        padding: 15px 10px;
+    }
+    
+    .result-box h3 {
+        font-size: 1.1rem;
+        word-break: break-all;
+    }
+      .link-copy-area input {
+        font-size: 0.85rem;
+        padding: 10px;
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .link-copy-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+}
+
+/* Custom styling for the copy button */
+.btn-copy {
+    background: linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    padding: 11px 24px !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    text-align: center !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+    box-shadow: 0 3px 10px rgba(139,92,246,.3) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: auto !important;
+    min-width: 180px !important;
+    margin: 0 auto !important;
+}
+
+.btn-copy:hover {
+    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%) !important;
+    color: #fff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(139,92,246,.4) !important;
+}
+
+#Copied {
+    font-weight: 700 !important;
+    font-size: 0.86rem !important;
+    margin-top: 10px !important;
+    min-height: 20px !important;
+    opacity: 0 !important;
+    transform: translateY(4px) !important;
+    transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+
+#Copied.visible {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+#Copied.copy-ok {
+    color: #059669 !important;
+}
+
+#Copied.copy-fail {
+    color: #dc2626 !important;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    25% { opacity: 1; }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+    </style>
+    <style id="maipdf2026-cn-bridge-css">
+/* Bridge theme: make maipdf2026 look close to maipdfcn while keeping behavior intact */
+:root {
+  --cn-primary: #7c3aed;
+  --cn-primary-light: #a78bfa;
+  --cn-primary-dark: #5b21b6;
+  --cn-secondary: #6366f1;
+  --cn-bg: #f6f3ff;
+  --cn-card: #ffffff;
+  --cn-border: #e9d5ff;
+  --cn-shadow: 0 2px 8px rgba(124, 58, 237, 0.08);
+  --cn-shadow-hover: 0 4px 16px rgba(124, 58, 237, 0.13);
+  --cn-radius: 14px;
+  --cn-radius-lg: 22px;
+
+  /* Override legacy theme vars so old selectors render in cn palette */
+  --primary: #7c3aed;
+  --primary-light: #a78bfa;
+  --primary-dark: #5b21b6;
+  --secondary: #6366f1;
+  --accent: #f472b6;
+  --text-dark: #232136;
+  --text-light: #fff;
+  --bg-light: #f6f3ff;
+  --bg-card: #fff;
+  --border: #e9d5ff;
+  --shadow: 0 2px 8px rgba(124,58,237,0.08);
+  --shadow-hover: 0 4px 16px rgba(124,58,237,0.13);
+  --gradient-primary: linear-gradient(90deg, #7c3aed 60%, #6366f1 100%);
+  --gradient-button: linear-gradient(90deg, #7c3aed 60%, #f472b6 100%);
+}
+
+body#page-top {
+  background: linear-gradient(120deg, #f6f3ff 0%, #e0c3fc 100%);
+}
+
+html,
+body#page-top,
+body#page-top main {
+  background: linear-gradient(120deg, #f6f3ff 0%, #e0c3fc 100%) !important;
+}
+
+body#page-top main {
+  min-height: 100vh;
+}
+
+/* Top area closer to cn page style */
+.hero-section {
+  background: linear-gradient(90deg, var(--cn-primary) 60%, var(--cn-secondary) 100%);
+  min-height: auto;
+  padding: 4px 0 8px !important;
+  border-radius: 0 0 var(--cn-radius-lg) var(--cn-radius-lg);
+  box-shadow: none !important;
+  position: relative;
+  z-index: 1020;
+  overflow: visible !important;
+}
+
+.hero-section .hero-background,
+.hero-section .floating-elements,
+.hero-section .scroll-indicator {
+  display: none;
+}
+
+.hero-section .container,
+.hero-section .container-fluid {
+  position: relative;
+}
+
+.hero-section .container-fluid {
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+  overflow: visible !important;
+}
+
+.hero-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #ede9fe;
+  font-size: 1rem;
+}
+
+/* 右上角登录状态：下拉触发按钮 */
+#headerLoginDropdown {
+  position: relative;
+  z-index: 1050;
+}
+.header-login-badge {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+  padding: 0 !important;
+}
+.header-login-badge:hover,
+.header-login-badge:focus {
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.header-login-badge::after {
+  margin-left: 0;
+}
+/* 下拉菜单样式：确保显示在最前 */
+.header-login-dropdown-menu {
+  min-width: 180px;
+  padding: 0.5rem 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  border: 1px solid #e5dff0;
+  z-index: 1060 !important;
+}
+.header-login-dropdown-menu .dropdown-item {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+.header-login-dropdown-menu .dropdown-item:hover {
+  background: #f5f3ff;
+  color: #5b21b6;
+}
+.header-login-dropdown-menu .dropdown-divider {
+  margin: 0.35rem 0;
+}
+
+.hero-help-btn {
+  border: 1px solid #ede9fe !important;
+  border-radius: 20px !important;
+  color: #fff !important;
+  background: transparent !important;
+  padding: 6px 16px !important;
+  font-weight: 600 !important;
+}
+
+.hero-help-btn:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+
+.hero-section .logo,
+.hero-section h1,
+.hero-section p {
+  color: #fff;
+  text-align: center;
+}
+
+.hero-topbar .logo {
+  text-align: left !important;
+}
+
+.hero-section h1 {
+  display: none;
+}
+
+.hero-section p {
+  display: none;
+}
+
+.hero-section .logo {
+  font-size: 2.8rem !important;
+  margin-bottom: 0 !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+.masthead-section {
+  padding: 8px 0 10px !important;
+}
+
+.masthead-section .user-auth-area {
+  margin-top: 0 !important;
+}
+
+.masthead-section .auth-buttons {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+.masthead-section .hero-action-buttons {
+  margin-top: 14px !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 12px !important;
+  max-width: 520px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.masthead-section .hero-action-buttons .btn {
+  width: 100% !important;
+  justify-content: center !important;
+}
+
+.masthead-section .auth-buttons .btn {
+  border-radius: 0.75rem !important;
+  min-width: auto !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 1.25rem !important;
+  line-height: 1.5 !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.10) !important;
+}
+
+.masthead-section .auth-buttons .btn i {
+  font-size: 1.05em !important;
+  vertical-align: -0.06em !important;
+}
+
+.masthead-section .auth-buttons .btn-danger {
+  background: linear-gradient(90deg, #7c3aed 60%, #f472b6 100%) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.masthead-section .auth-buttons .btn-outline-info {
+  background: #fff !important;
+  color: #06b6d4 !important;
+  border: 1px solid #06b6d4 !important;
+}
+
+/* 登录后显示的按钮：加深颜色，避免过淡 */
+.masthead-section .auth-buttons .btn-outline-light,
+#logoutBtn,
+#controlpanel {
+  background: #fff !important;
+  color: #5b21b6 !important;
+  border: 1.5px solid #7c3aed !important;
+  font-weight: 600 !important;
+}
+.masthead-section .auth-buttons .btn-outline-light:hover,
+#logoutBtn:hover,
+#controlpanel:hover {
+  background: #f5f3ff !important;
+  color: #4c1d95 !important;
+  border-color: #5b21b6 !important;
+}
+
+.masthead-section .hero-action-buttons .btn {
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+  font-size: 0.9rem !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.2px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  transition: transform 0.2s ease, box-shadow 0.25s ease, border-color 0.25s ease !important;
+  border: 1px solid rgba(120, 130, 255, 0.35) !important;
+  background: linear-gradient(145deg, rgba(24, 26, 55, 0.9), rgba(41, 34, 88, 0.86)) !important;
+  color: #eef2ff !important;
+  box-shadow: 0 8px 24px rgba(29, 33, 92, 0.35), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+.masthead-section .hero-action-buttons .btn:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 28px rgba(32, 40, 116, 0.45), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+  border-color: rgba(132, 232, 255, 0.7) !important;
+}
+
+.masthead-section .hero-action-buttons .hero-quick-link {
+  min-height: 84px !important;
+}
+
+.masthead-section .hero-action-buttons .hero-quick-link::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -120% !important;
+  width: 62% !important;
+  height: 100% !important;
+  background: linear-gradient(110deg, rgba(255,255,255,0), rgba(138,248,255,0.26), rgba(255,255,255,0)) !important;
+  transform: skewX(-20deg) !important;
+  transition: left 0.55s ease !important;
+}
+
+.masthead-section .hero-action-buttons .hero-quick-link:hover::after {
+  left: 150% !important;
+}
+
+.hero-quick-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12px !important;
+  flex-shrink: 0 !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25), 0 6px 18px rgba(0,0,0,0.25) !important;
+}
+
+.hero-quick-icon i {
+  font-size: 0.95rem !important;
+  line-height: 1 !important;
+}
+
+.hero-quick-copy {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 2px !important;
+  text-align: left !important;
+}
+
+.hero-quick-title {
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  line-height: 1.15 !important;
+  color: #f8faff !important;
+  text-shadow: 0 0 10px rgba(153, 233, 255, 0.25) !important;
+}
+
+.hero-quick-sub {
+  font-size: 0.68rem !important;
+  font-weight: 500 !important;
+  opacity: 0.92 !important;
+  line-height: 1.1 !important;
+  color: #a9b8ff !important;
+}
+
+.masthead-section .hero-action-buttons .btn-outline-danger {
+  background: linear-gradient(140deg, rgba(20, 27, 68, 0.94), rgba(36, 27, 82, 0.9)) !important;
+  border-color: rgba(122, 174, 255, 0.45) !important;
+}
+.masthead-section .hero-action-buttons .btn-outline-danger .hero-quick-icon {
+  background: linear-gradient(145deg, rgba(50, 120, 255, 0.28), rgba(86, 61, 240, 0.3)) !important;
+  color: #b8e7ff !important;
+}
+.masthead-section .hero-action-buttons .btn-outline-success .hero-quick-icon,
+.masthead-section .hero-action-buttons .btn-outline-primary .hero-quick-icon {
+  color: #e6fcff !important;
+}
+.masthead-section .hero-action-buttons .btn-outline-success {
+  background: linear-gradient(140deg, rgba(19, 37, 86, 0.95), rgba(33, 61, 132, 0.86)) !important;
+  border-color: rgba(108, 227, 255, 0.52) !important;
+}
+.masthead-section .hero-action-buttons .btn-outline-success .hero-quick-icon {
+  background: linear-gradient(145deg, rgba(0, 189, 255, 0.28), rgba(70, 132, 255, 0.34)) !important;
+}
+.masthead-section .hero-action-buttons .btn-outline-primary {
+  background: linear-gradient(140deg, rgba(25, 28, 90, 0.96), rgba(74, 41, 162, 0.88)) !important;
+  border-color: rgba(182, 144, 255, 0.58) !important;
+}
+.masthead-section .hero-action-buttons .btn-outline-primary .hero-quick-icon {
+  background: linear-gradient(145deg, rgba(123, 97, 255, 0.34), rgba(171, 111, 255, 0.3)) !important;
+}
+
+.masthead-section .hero-action-buttons .btn-outline-danger:hover .hero-quick-icon {
+  background: linear-gradient(145deg, rgba(78, 172, 255, 0.42), rgba(118, 83, 255, 0.42)) !important;
+}
+.masthead-section .hero-action-buttons .btn-outline-success:hover .hero-quick-icon,
+.masthead-section .hero-action-buttons .btn-outline-primary:hover .hero-quick-icon {
+  filter: brightness(1.1) saturate(1.1) !important;
+}
+
+.masthead-section .hero-action-buttons .hero-quick-link:hover .hero-quick-icon {
+  transform: scale(1.06) !important;
+  transition: transform 0.2s ease !important;
+}
+
+/* 电脑端：按钮缩小一档 */
+@media (min-width: 769px) {
+  .masthead-section .hero-action-buttons {
+    max-width: 420px !important;
+    gap: 8px !important;
+    margin-top: 10px !important;
+  }
+  .masthead-section .hero-action-buttons .btn {
+    padding: 8px 12px !important;
+    font-size: 0.82rem !important;
+    gap: 8px !important;
+  }
+  .masthead-section .hero-action-buttons .hero-quick-link {
+    min-height: 70px !important;
+  }
+  .hero-quick-icon {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+  }
+  .hero-quick-icon i {
+    font-size: 0.78rem !important;
+  }
+  .hero-quick-title {
+    font-size: 0.75rem !important;
+  }
+  .hero-quick-sub {
+    font-size: 0.62rem !important;
+  }
+  .masthead-section .auth-buttons .btn {
+    font-size: 1rem !important;
+    padding: 0.4rem 0.85rem !important;
+  }
+}
+
+.btn-danger,
+.btn-outline-danger:hover {
+  background: linear-gradient(90deg, #7c3aed 60%, #f472b6 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px 0 rgba(124,58,237,0.10) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.btn-outline-danger {
+  color: var(--cn-primary) !important;
+  border: 1.5px solid var(--cn-primary) !important;
+  background: #fff !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.btn-primary,
+.btn-success,
+.btn-outline-success,
+.btn-outline-primary {
+  background: var(--cn-secondary) !important;
+  color: #fff !important;
+  border: none !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+.btn-outline-success:hover,
+.btn-outline-primary:hover {
+  filter: brightness(1.08) !important;
+  box-shadow: 0 2px 8px 0 rgba(124,58,237,0.10) !important;
+  color: #fff !important;
+}
+
+/* Section card look */
+.page-section {
+  background: var(--cn-card) !important;
+  border: 1px solid var(--cn-border) !important;
+  border-radius: var(--cn-radius-lg) !important;
+  box-shadow: var(--cn-shadow) !important;
+  padding: 2.2rem 1.2rem !important;
+  margin: 0 auto 2rem !important;
+}
+
+.features-section.page-section,
+.why-choose-us-section.page-section,
+.cta-section.page-section {
+  background: var(--cn-card) !important;
+  border: 1px solid var(--cn-border) !important;
+  max-width: 1140px !important;
+  width: calc(100% - 24px) !important;
+}
+
+#section1.page-section {
+  background: var(--cn-card) !important;
+  border-color: var(--cn-border) !important;
+}
+
+#section1 > .container,
+#section2 > .container,
+#contact > .container {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  max-width: none !important;
+}
+
+#section1 .upload-container {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  max-width: 860px !important;
+  margin: 0 auto !important;
+}
+
+.page-section h2 {
+  text-align: center;
+  color: var(--cn-primary);
+  font-weight: 700;
+  background: linear-gradient(90deg, #7c3aed 60%, #f472b6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-section h2::after {
+  content: "";
+  display: block;
+  width: 62px;
+  height: 3px;
+  margin: 10px auto 0;
+  border-radius: 4px;
+  background: var(--cn-primary-light);
+}
+
+/* Card style for each block in step2 */
+.step-card {
+  background: #f3e8ff !important;
+  border: 1px solid var(--cn-border) !important;
+  border-radius: var(--cn-radius) !important;
+  box-shadow: var(--cn-shadow) !important;
+  padding: 1.3rem 1rem !important;
+}
+
+.step-card:hover {
+  box-shadow: var(--cn-shadow-hover) !important;
+  border-color: var(--cn-primary-light) !important;
+}
+
+.setting-box .form-control,
+.setting-box .form-select {
+  border-radius: 10px;
+  border: 1px solid #d7c6ff;
+}
+
+/* Dropzone look closer to cn */
+#dropz {
+  border: 2.5px dashed var(--cn-primary) !important;
+  border-radius: var(--cn-radius-lg) !important;
+  background: #ede9fe !important;
+  color: var(--cn-primary-dark) !important;
+  font-weight: 500 !important;
+  padding: 1.7rem 1.2rem !important;
+  box-shadow: var(--cn-shadow) !important;
+  text-align: center !important;
+}
+
+#dropz .dz-message {
+  color: var(--cn-primary-dark) !important;
+  font-size: 1.1rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.5px !important;
+}
+
+#dropz:hover,
+#dropz.dz-drag-hover {
+  background: #d1c4e9 !important;
+  border-color: var(--cn-primary-dark) !important;
+  box-shadow: var(--cn-shadow-hover) !important;
+}
+
+/* Keep existing step progress but soften to cn card rhythm */
+.step-progress-container {
+  background: #efe7fb !important;
+  border-bottom: none;
+  margin-top: 10px;
+}
+
+.step-progress {
+  background: #ffffffcc;
+  border: 1px solid var(--cn-border);
+  border-radius: 999px;
+  padding: 10px 12px;
+  box-shadow: var(--cn-shadow);
+}
+
+.section-divider {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 auto 1rem !important;
+  max-width: 1140px !important;
+  width: calc(100% - 24px) !important;
+}
+
+#cishu {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  background: #ede9fe !important;
+  color: var(--cn-primary-dark) !important;
+  border: 1px solid var(--cn-border) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.6rem 1rem !important;
+  box-shadow: var(--cn-shadow) !important;
+  font-weight: 600 !important;
+  font-style: normal !important;
+  font-size: 0.98rem !important;
+  letter-spacing: 0.5px !important;
+  text-align: center !important;
+}
+
+.breadcrumb-container {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.breadcrumb {
+  background: #ede9fe !important;
+  padding: 0.7rem 1.2rem !important;
+  border-radius: 0.5rem !important;
+  font-size: 1.02rem !important;
+  box-shadow: var(--cn-shadow) !important;
+}
+
+.breadcrumb-item {
+  display: list-item !important;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  display: inline !important;
+  content: "/" !important;
+  color: #6c757d !important;
+  padding: 0 0.5rem !important;
+}
+
+.breadcrumb-item a {
+  color: var(--cn-primary) !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+/* Step3 (Results) style aligned to maipdfcn */
+#contact {
+  background: var(--cn-card) !important;
+}
+
+#contact .cta-box {
+  max-width: 980px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#contact #3step {
+  margin-bottom: 16px !important;
+}
+
+#contact .results-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 300px !important;
+  gap: 20px !important;
+  align-items: center !important;
+  background: #ede9fe !important;
+  border: 1px solid var(--cn-border) !important;
+  border-radius: 16px !important;
+  padding: 22px 24px !important;
+  box-shadow: var(--cn-shadow) !important;
+}
+
+#contact .result-box {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+#contact #pdf-link-display {
+  display: none !important;
+}
+
+#contact .link-copy-area {
+  margin: 8px 0 10px !important;
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+}
+
+#contact .link-copy-area .form-control {
+  border-radius: 10px 0 0 10px !important;
+  border-right: 0 !important;
+  min-height: 46px !important;
+  margin-bottom: 0 !important;
+}
+
+#contact .link-copy-area .btn-copy {
+  margin-top: 0 !important;
+  border-radius: 0 10px 10px 0 !important;
+  min-height: 46px !important;
+  min-width: 160px !important;
+  background: #fff !important;
+  color: var(--cn-primary) !important;
+  border: 2px solid var(--cn-primary) !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+#contact .link-copy-area .btn-copy:hover {
+  background: #f6f3ff !important;
+  color: var(--cn-primary-dark) !important;
+}
+
+#contact .link-copy-area .btn-copy.copied-state {
+  background: #0f766e !important;
+  color: #ecfeff !important;
+  border-color: #0f766e !important;
+}
+
+#contact .result-sep {
+  border: 0 !important;
+  border-top: 1px solid #cfc3e8 !important;
+  margin: 12px 0 14px !important;
+  opacity: 1 !important;
+}
+
+#contact #result-password,
+#contact #result-message,
+#contact #Copied {
+  color: #4b5563 !important;
+  font-size: 0.95rem !important;
+  margin-top: 6px !important;
+}
+
+#contact .result-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 6px 0 !important;
+  font-size: 0.95rem !important;
+  color: #374151 !important;
+}
+
+#contact .result-meta strong {
+  min-width: 112px !important;
+  color: #374151 !important;
+}
+
+#contact .result-chip {
+  display: inline-block !important;
+  background: #fdf2f8 !important;
+  color: #ec4899 !important;
+  border-radius: 10px !important;
+  padding: 3px 10px !important;
+  font-size: 0.92rem !important;
+  line-height: 1.25 !important;
+  border: 1px solid #f5d0e5 !important;
+}
+
+#contact .action-title {
+  display: none !important;
+}
+
+#contact .action-buttons {
+  display: flex !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
+}
+
+#contact .action-buttons .btn-outline-dark {
+  width: auto !important;
+  border-radius: 8px !important;
+  padding: 8px 14px !important;
+  background: #f8f6ff !important;
+  color: #111827 !important;
+  border: 1px solid #4b5563 !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+#contact .action-buttons .btn-outline-dark:hover {
+  background: #f3efff !important;
+  border-color: #374151 !important;
+}
+
+#contact .action-buttons .btn-outline-dark i {
+  color: var(--cn-primary) !important;
+}
+
+#contact .action-buttons-container {
+  margin-top: 10px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#contact #qrcode.qr-container {
+  background: #fff !important;
+  border: 5px solid #e9d5ff !important;
+  border-radius: 14px !important;
+  padding: 8px !important;
+  min-width: 170px !important;
+  min-height: 170px !important;
+  box-shadow: var(--cn-shadow) !important;
+}
+
+#contact .result-box.text-center p {
+  margin-top: 10px !important;
+  margin-bottom: 0 !important;
+  color: #374151 !important;
+}
+
+.features-section.page-section,
+.why-choose-us-section.page-section,
+.cta-section.page-section {
+  background: var(--cn-card) !important;
+  margin-top: 14px;
+  margin-bottom: 22px;
+}
+
+/* Match cn small button style in masthead area */
+.hero-section .btn {
+  box-shadow: none !important;
+}
+
+.hero-section .btn:hover {
+  box-shadow: var(--cn-shadow) !important;
+}
+
+/* Footer same as maipdfcn */
+.footer-custom {
+  background: var(--cn-primary-dark) !important;
+  color: #fff !important;
+  padding: 1.2rem 0 !important;
+  margin-top: 2rem !important;
+  border-radius: 0 0 var(--cn-radius-lg) var(--cn-radius-lg) !important;
+  box-shadow: 0 -2px 12px rgba(124,58,237,0.08) !important;
+}
+
+.footer-custom .text-muted {
+  color: #ede9fe !important;
+}
+
+@media (max-width: 768px) {
+  .hero-topbar {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+  }
+  .hero-meta {
+    width: auto !important;
+    flex-wrap: nowrap !important;
+    flex-shrink: 0 !important;
+    font-size: 0.9rem !important;
+  }
+  .hero-section .logo {
+    font-size: 2rem !important;
+    flex-shrink: 0 !important;
+  }
+  .hero-section h1 {
+    font-size: 1.35rem;
+  }
+  .page-section {
+    padding: 1.15rem 0.65rem;
+    margin-top: 10px;
+    margin-bottom: 16px;
+  }
+  .features-section.page-section > .container,
+  .why-choose-us-section.page-section > .container,
+  .cta-section.page-section > .container {
+    padding: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
+  }
+  #section1 .upload-container {
+    padding: 0;
+    border-radius: 0;
+  }
+  #dropz {
+    padding: 1rem 0.65rem;
+    border-radius: 14px;
+  }
+  #dropz .dz-message {
+    font-size: 0.98rem;
+  }
+  .step-progress-container {
+    margin-top: 6px;
+  }
+  .masthead-section .auth-buttons .btn {
+    font-size: 1.05rem !important;
+    padding: 0.45rem 0.9rem !important;
+  }
+  #cishu {
+    font-size: 0.85rem !important;
+    padding: 0.5rem !important;
+  }
+  #contact .results-grid {
+    grid-template-columns: 1fr !important;
+    padding: 16px !important;
+  }
+  #contact .result-meta {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  #contact .result-meta strong {
+    min-width: auto !important;
+  }
+  #contact .link-copy-area {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  #contact .link-copy-area .form-control,
+  #contact .link-copy-area .btn-copy {
+    border-radius: 10px !important;
+    border-right: 2px solid var(--cn-primary) !important;
+  }
+  #contact .link-copy-area .btn-copy {
+    min-width: 100% !important;
+  }
+}
+
+/* ========== Mobile 界面优化 ========== */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  /* 触控友好：按钮/链接最小点击区域 44px */
+  .btn, .btn-feature-start, .btn-copy, .btn-hero-primary, .btn-hero-secondary, .btn-hero-tertiary,
+  .action-buttons .btn, .masthead-section .auth-buttons .btn {
+    min-height: 44px !important;
+    padding: 12px 20px !important;
+  }
+  /* 防止 iOS 输入框聚焦自动放大：字体至少 16px */
+  .form-control, input[type="text"], input[type="email"], input[type="number"], select {
+    font-size: 16px !important;
+    min-height: 44px !important;
+  }
+  .dropzone {
+    min-height: 160px !important;
+    padding: 24px 16px !important;
+  }
+  #dropz .dz-message {
+    margin: 1.25em 0 !important;
+    font-size: 0.95rem !important;
+  }
+  /* 步骤条手机优化：更紧凑、留边距、不贴边 */
+  .step-progress-container {
+    padding: 14px 12px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .step-progress-container .container {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  .step-progress {
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    max-width: 100% !important;
+    padding: 8px 6px !important;
+  }
+  .step-item {
+    padding: 6px 10px !important;
+    gap: 6px !important;
+  }
+  .step-number {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.8rem !important;
+  }
+  .step-text {
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
+  }
+  .sticky-active .step-number {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.85rem !important;
+  }
+  .sticky-active .step-text {
+    font-size: 0.7rem !important;
+  }
+  /* 底部安全区（刘海屏/横条） */
+  .footer-section {
+    padding-left: env(safe-area-inset-left) !important;
+    padding-right: env(safe-area-inset-right) !important;
+    padding-bottom: calc(50px + env(safe-area-inset-bottom)) !important;
+  }
+  .back-to-top {
+    bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+    right: calc(20px + env(safe-area-inset-right)) !important;
+  }
+  .masthead-section .hero-action-buttons {
+    grid-template-columns: 1fr !important;
+    max-width: 100% !important;
+  }
+  .masthead-section .hero-action-buttons .hero-quick-link {
+    min-height: 56px !important;
+    justify-content: center !important;
+  }
+  .hero-quick-copy {
+    align-items: center !important;
+    text-align: center !important;
+  }
+  .hero-quick-sub {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  .hero-section h1 {
+    font-size: 1.4rem !important;
+  }
+  .hero-section p {
+    font-size: 0.95rem !important;
+  }
+  /* 步骤条超小屏：进一步收紧，保证一行或两行整齐 */
+  .step-progress-container {
+    padding: 10px 8px !important;
+  }
+  .step-progress {
+    gap: 6px !important;
+    padding: 6px 4px !important;
+  }
+  .step-item {
+    padding: 5px 8px !important;
+    gap: 5px !important;
+  }
+  .step-number {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 0.75rem !important;
+  }
+  .sticky-active .step-number {
+    width: 26px !important;
+    height: 26px !important;
+  }
+  .step-text {
+    font-size: 0.7rem !important;
+  }
+  .sticky-active .step-text {
+    font-size: 0.65rem !important;
+  }
+  .setting-box {
+    padding: 18px 14px !important;
+  }
+  .setting-box h3 {
+    font-size: 0.95rem !important;
+  }
+  .page-section {
+    padding: 1rem 0.5rem !important;
+  }
+  .why-choose-us-section .container,
+  .features-section .container,
+  .cta-section .container {
+    padding: 24px 16px !important;
+  }
+}
+
+    </style>
+</head>
+
+
+    <script>
+       var d = new Date();
+       document.cookie ="usertime="+d.getHours();
+       document.cookie ="usertime2="+encodeURI(d);
+       d=d+'maipdf';
+
+    </script>
+    
+    <!-- Script to handle form submission page reload -->
+    <script>
+        // Run after page is fully loaded
+        window.addEventListener('DOMContentLoaded', function() {            // Check if the results section is visible (form was submitted)
+            if (document.getElementById('contact') && 
+                document.getElementById('contact').style.display !== 'none' && 
+                document.getElementById('myInput') && 
+                document.getElementById('myInput').value) {
+                
+                console.log("Form submitted, scrolling to results section");
+                
+                // Update step indicators
+                document.getElementById('step-indicator-1').classList.add('completed');
+                document.getElementById('step-indicator-1').classList.remove('active');
+                document.getElementById('step-indicator-2').classList.add('completed');
+                document.getElementById('step-indicator-2').classList.remove('active');
+                document.getElementById('step-indicator-3').classList.add('active');
+                
+                // Scroll to Step 3 section - with a slight delay to ensure everything has loaded
+                setTimeout(function() {
+                    // Try both IDs to ensure we find the right element
+                    if (document.getElementById('3step')) {
+                        document.getElementById('3step').scrollIntoView({ behavior: 'smooth' });
+                    } else if (document.getElementById('contact')) {
+                        document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+                    }
+                    
+                    // Add highlight effect
+                    document.getElementById('contact').classList.add('highlight-section');
+                    setTimeout(function() {
+                        document.getElementById('contact').classList.remove('highlight-section');
+                        
+                        // Focus attention on the action buttons
+                        const actionButtonsContainer = document.querySelector('.action-buttons-container');
+                        if (actionButtonsContainer) {
+                            actionButtonsContainer.classList.add('emphasize-button');
+                            setTimeout(() => {
+                                actionButtonsContainer.classList.remove('emphasize-button');
+                            }, 2000);
+                        }
+                    }, 1500);
+                }, 500);
+            }
+            
+            // Add scroll event to handle sticky header effects
+            const progressContainer = document.querySelector('.step-progress-container');
+            let isSticky = false;
+            
+            window.addEventListener('scroll', function() {
+                const scrollPosition = window.scrollY;
+                if (scrollPosition > 100 && !isSticky) {
+                    progressContainer.classList.add('sticky-active');
+                    isSticky = true;
+                } else if (scrollPosition <= 100 && isSticky) {
+                    progressContainer.classList.remove('sticky-active');
+                    isSticky = false;
+                }
+            });
+        });
+    </script>
+
+
+
+
+<body id="page-top">
+<script>
+var dizhi = '';
+var dengru = 'wofocibeifox';
+var picplace = '';
+(function() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    window.fileplaceSHOW = '/' + y + '/' + m + '/' + day + '/';
+})();
+
+function updateNetworkInfoLabel() {
+    var pleaseupload = document.getElementById("pleaseupload");
+    if (!pleaseupload) return;
+    if (dizhi && dizhi.trim() !== "") {
+        pleaseupload.innerHTML = dizhi + '<small style="color:#718096"> - Network Info</small>';
+    } else {
+        pleaseupload.innerHTML = '<small style="color:#718096">Network Info unavailable</small>';
+    }
+}
+
+async function loadBootstrapContext() {
+    try {
+        var res = await fetch("maipdf2026_backend.php?action=bootstrap", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin"
+        });
+        if (!res.ok) {
+            updateNetworkInfoLabel();
+            return;
+        }
+        var data = await res.json();
+        if (data && data.status === "ok") {
+            if (typeof data.ip === "string") dizhi = data.ip;
+            if (typeof data.dengru === "string") dengru = data.dengru;
+            if (typeof data.picplace === "string") picplace = data.picplace;
+            if (typeof data.fileplaceSHOW === "string") window.fileplaceSHOW = data.fileplaceSHOW;
+        }
+    } catch (e) {
+        // ignore bootstrap errors
+    }
+    updateNetworkInfoLabel();
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    loadBootstrapContext();
+    if (typeof normalizeResultMeta === 'function') {
+      normalizeResultMeta();
+    }
+});
+</script>
+
+
+<!-- Hero Section - Styled like newhome.html -->
+<header class="hero-section">
+    <div class="hero-background">
+        <div class="hero-pattern"></div>
+        <div class="animated-bg"></div>
+    </div>
+    <div class="container-fluid">
+        <div class="hero-topbar">
+            <div class="logo logo-main animate__animated animate__fadeInDown">MaiPDF</div>
+            <div class="hero-meta">
+                <span class="d-none d-md-inline">Make PDF sharing controllable and effortless</span>
+                <div id="headerLoginDropdown" class="dropdown" style="display:none;">
+                    <button class="header-login-badge dropdown-toggle" type="button" id="headerLoginDropdownToggle" data-bs-toggle="dropdown" aria-expanded="false" title="Account">
+                        <i class="fas fa-user-check"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end header-login-dropdown-menu" aria-labelledby="headerLoginDropdownToggle">
+                        <li><a class="dropdown-item" href="../6/control-center.html"><i class="fas fa-cog me-2"></i> Control Panel</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><button type="button" class="dropdown-item" id="headerLogoutBtn"><i class="fas fa-sign-out-alt me-2"></i> Log Out</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="floating-elements">
+        <div class="float-element" style="--i:1"></div>
+        <div class="float-element" style="--i:2"></div>
+        <div class="float-element" style="--i:3"></div>
+        <div class="float-element" style="--i:4"></div>
+        <div class="float-element" style="--i:5"></div>
+    </div>
+</header>
+
+<section class="text-center container masthead-section">
+    <div class="row py-lg-2 justify-content-center">
+        <div class="col-lg-10 col-md-12">
+            <div class="user-auth-area animate__animated animate__fadeInUp animate__delay-1s">
+                <div id="userInfo"></div>
+                <div class="auth-buttons">
+                    <button type="button" class="btn btn-danger btn-lg me-sm-2 mb-2 mb-sm-0" id="loginBtn"><i class="fas fa-sign-in-alt me-1"></i> Login</button>
+                    <a href="#section1" class="btn btn-outline-info btn-lg mb-2 mb-sm-0" id="guestBtn"><i class="fas fa-user-circle me-1"></i> Guest Use</a>
+                    <button class="btn btn-outline-light" id="logoutBtn" style="display:none;">Log Out</button>
+                    <a href='../6/control-center.html' class='btn btn-outline-light' id="controlpanel" style="display:none;"><i class="fas fa-cog me-1"></i> Control Panel</a>
+                </div>
+            </div>
+            <div class="hero-action-buttons animate__animated animate__fadeInUp animate__delay-2s">
+                <a href="../getresult.html" class="btn btn-outline-danger my-1 btn-icon hero-quick-link" target="_blank">
+                    <span class="hero-quick-icon"><i class="fas fa-link"></i></span>
+                    <span class="hero-quick-copy">
+                        <span class="hero-quick-title">Access Records</span>
+                        <span class="hero-quick-sub">View read history</span>
+                    </span>
+                </a>
+                <a href="https://maipdf.com/pdf/hahachange.php" class="btn btn-outline-success my-1 btn-icon hero-quick-link" target="_blank">
+                    <span class="hero-quick-icon"><i class="fas fa-edit"></i></span>
+                    <span class="hero-quick-copy">
+                        <span class="hero-quick-title">Edit Link</span>
+                        <span class="hero-quick-sub">Update or delete</span>
+                    </span>
+                </a>
+                <a href="../watermark.html" class="btn btn-outline-primary my-1 btn-icon hero-quick-link" target="_blank">
+                    <span class="hero-quick-icon"><i class="fas fa-fingerprint"></i></span>
+                    <span class="hero-quick-copy">
+                        <span class="hero-quick-title">Find Watermark</span>
+                        <span class="hero-quick-sub">Search by ID</span>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<main>    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-container">
+        <div class="container">
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a class="link-secondary" href="https://maipdf.com/est/k6776416f71665@pdf">FenceView</a></li>
+                <li class="breadcrumb-item"><a class="link-secondary" href="https://maipdf.com/est/a677641030889c@pdf">SafeLink</a></li>
+                <li class="breadcrumb-item"><a class="link-secondary" href="https://maipdf.com/est/d67764148dd446@pdf">OpenLink</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Step Progress Indicator -->
+    <div class="step-progress-container">
+        <div class="container">
+            <div class="step-progress">
+                <div class="step-item active" id="step-indicator-1">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Upload File</div>
+                </div>
+                <div class="step-item" id="step-indicator-2">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Configure</div>
+                </div>
+                <div class="step-item" id="step-indicator-3">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Share</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    <section class="features-section page-section" id="section1">
+        <div class="container">
+            <h2 id="1step">1: Upload File</h2>
+            <div class="upload-container">
+                <div class="form-group">
+                    <label class="title" id="pleaseupload"></label>
+                    <div id="dropz" class="dropzone"></div>
+                </div>
+                <input type="hidden" name="file_id" ng-model="file_id" id="file_id"/>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Settings Section -->    <section class="why-choose-us-section page-section" id="section2">
+        <div class="container">
+            <form role="form" action="maipdf2026_backend.php" method="post">
+                <h2 id="2step">2: Set Up Reading Times and Each Period of Length</h2>
+                
+                <input type="text" class="form-control text-center" id="name" name="sender" value="File" readonly="readonly">
+                
+                <div class="settings-grid" id="2step3">
+                    <div class="setting-box step-card">
+                        <div class="setting-icon">
+                            <i class="fas fa-folder-open fa-icon"></i>
+                        </div>
+                        <div class="inline-option-row access-limit-row">
+                            <h3>Access Limit</h3>
+                            <button type="button" class="help-toggle" data-bs-toggle="collapse" data-bs-target="#accessLimitHelp" aria-expanded="false" aria-controls="accessLimitHelp">?</button>
+                        </div>
+                        <div id="accessLimitHelp" class="collapse help-collapse">
+                            Unlimited open will be applied if Access-Limit is over 10k, and no access record will be logged.
+                        </div>
+                        <input class="form-control" type="number" id="limit" name="limit" placeholder="Number of Opens">
+                        
+                        <div class="mt-4">
+                            <i class="fas fa-user-clock fa-icon"></i>
+                            <h3>Each Session</h3>
+                            <input class="form-control" type="number" name="password" placeholder="in (seconds)">
+                        </div>
+                    </div>
+                    
+                    <div class="setting-box protection-box step-card">
+                        <div class="setting-icon">
+                            <i class="fas fa-lock fa-icon"></i>
+                        </div>
+                       
+                        <div class="protection-options">
+                            <div class="inline-option-row">
+                                <label class="toggle-switch" for="darkmode">
+                                    <input type="checkbox" name="darkmode" id="darkmode" value="yes">
+                                    <span class="toggle-track"></span>
+                                    <span class="toggle-text">Dynamic Watermark</span>
+                                </label>
+                                <button type="button" class="help-toggle" data-bs-toggle="collapse" data-bs-target="#dynamoWatermarkHelp" aria-expanded="false" aria-controls="dynamoWatermarkHelp">?</button>
+                            </div>
+                            <div id="darkmodeLimitNote" class="form-text" style="display:none;">Access-Limit over 10k cannot use Dynamowatermark.</div>
+                            <div id="dynamoWatermarkHelp" class="collapse help-collapse">
+                                Dynamic watermark shows viewer info and time on the document to discourage screenshots and sharing.
+                            </div>
+                            
+                            <div class="view-type-row">
+                                <div class="view-type-label no-text">
+                                    <span class="view-type-icons" aria-hidden="true">
+                                        <i class="fas fa-desktop"></i>
+                                    </span>
+                                </div>
+                                <select class="form-select view-type-select" name="zhangai" aria-label="View Type">
+                                    <option value="straight" selected>SecureView</option>
+                                    <option value="obstacle">FenceView</option>
+                                    <option value="topen">Unrestricted</option>
+                                </select>
+                                <button type="button" class="help-toggle view-type-help-toggle" data-bs-toggle="collapse" data-bs-target="#viewTypeHelp" aria-expanded="false" aria-controls="viewTypeHelp">?</button>
+                            </div>
+                            <div id="viewTypeHelp" class="collapse help-collapse view-type-help">
+                                SecureView: default view-only mode. FenceView: extra protection against screenshots. Unrestricted: allows normal viewing without restrictions.
+                            </div>
+                        </div>
+
+                        <div class="mt-3 expiration-row">
+                            <h3>
+                                <span class="expiration-icon" aria-hidden="true">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </span>
+                                Expiration
+                            </h3>
+                            <div class="expiration-controls">
+                                <select class="form-select" id="expiration_preset" name="expiration_preset" aria-label="Expiration preset">
+                                    <option value="">Select duration</option>
+                                    <option value="1h">1 hour</option>
+                                    <option value="3h">3 hours</option>
+                                    <option value="24h">24 hours</option>
+                                    <option value="5d">5 days</option>
+                                    <option value="custom">Custom days</option>
+                                    <option value="unlimited">Unlimited</option>
+                                </select>
+                                <input class="form-control" type="number" id="expiration_custom_days" min="1" step="1" placeholder="Custom days" style="display:none;">
+                                <input type="hidden" name="expiration_day" id="expiration_day" value="">
+                                <input type="hidden" name="expiration_ts" id="expiration_ts" value="">
+                            </div>
+                            <div class="expiration-summary-row">
+                                <div class="expiration-result" id="expiration_result" style="display:none;">UTC expiry time: -</div>
+                            </div>
+                            <div class="expiration-timezone">
+                                <div class="timezone-row" id="timezone_row" style="display:none;">
+                                    <select class="form-select" id="timezone_tz" aria-label="Time zone selection">
+                                        <option value="">Time zone</option>
+                                    </select>
+                                </div>
+                                <div class="expiration-local" id="expiration_local" style="display:none;">Local time: -</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notification Section -->
+                    <div class="setting-box step-card">
+                        <div class="setting-icon">
+                            <i class="fas fa-bell fa-icon"></i>
+                        </div>
+                        <h3>Read Alerts (Telegram)</h3>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="enableTelegramAlert" name="enableTelegramAlert" value="yes">
+                            <label class="form-check-label">Enable read alert (optional)</label>
+                        </div>
+                        <div id="telegramLimitNote" class="form-text" style="display:none;">Access-Limit over 10k cannot use Telegram alert.</div>
+
+                        <div id="telegramBindPanel" style="display: none;">
+                            <div class="mb-2">
+                                <a class="btn btn-feature-start" href="https://t.me/maipdfbot" id="telegram-bind-link" target="_blank" rel="noopener">Add bot</a>
+                                <button type="button" class="btn btn-feature-start telegram-refresh">Get chat_id</button>
+                            </div>
+                            <input class="form-control mb-2" type="text" name="mailalert" id="telegram-chat-id" placeholder="chat_id (auto)" readonly>
+                            <input type="hidden" id="telegram-token" name="telegram_token" value="">
+                            <p class="telegram-status telegram-status-mini">Telegram: Not linked</p>
+                            <div class="form-text telegram-hint-mini" id="telegramBindHint">Add bot -> send /start -> Get chat_id (auto).</div>
+                        </div>
+                    </div>
+
+                    <!-- Email Verification Section -->
+                    <div class="setting-box step-card">
+                        <div class="setting-icon">
+                            <i class="fas fa-shield-alt fa-icon"></i>
+                        </div>
+                        <h3>Email Verification</h3>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="enableEmailValidation" name="enableEmailValidation" value="yes">
+                            <label class="form-check-label">Require email verification</label>
+                        </div>
+                        
+                        <div id="emailAddressesInput" style="display: none;">
+                            <textarea class="form-control" name="emailAddresses" placeholder="Enter up to 50 email addresses, separated by commas" rows="4"></textarea>
+                        </div>
+
+                        <div class="setting-cta">
+                            <button type="submit" class="btn btn-feature-start cta-glow">Create Secure Link</button>
+                            <div id="generateProgress" class="generate-progress" aria-live="polite"></div>
+                            <button type="button" id="createNewOneBtn" class="btn btn-outline-dark btn-sm mt-2" style="display:none;">
+                                <i class="fas fa-rotate-right me-1"></i>Create New One
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    
+    <div class="section-divider">
+        <p id="cishu">Unlimited open will be applied if 'Access-Limit' is over 10k, and no access record will be logged.</p>
+    </div>
+    
+    <!-- Results Section - Only shown after form submission -->
+    <section class="cta-section page-section" id="contact">
+        <div class="container">
+            <div class="cta-box">
+                <h2 id="3step">3: URL and QR Created</h2>
+                  <div class="results-grid">
+                    <div class="result-box">
+                        <h3 id="pdf-link-display"></h3>
+                        <div class="link-copy-area">
+                            <input type="text" class="form-control" value="" id="myInput">
+                            <button id="copyLinkBtn" class="btn btn-copy mt-3" onclick="myFunction()">
+                                <i class="fas fa-copy me-2"></i>Copy This Link
+                            </button>
+                        </div>
+                        <hr class="result-sep">
+                        <h6 class="result-meta" id="result-message"><strong>Read Code:</strong> <code class="result-chip">Open link code</code></h6>
+                        <h5 class="result-meta mb-3" id="result-password"><strong>Modify Code:</strong> <code class="result-chip">Manage link code</code></h5>
+                        <h5 id='Copied'></h5>
+                        <div class="action-buttons-container">
+                            <h5 class="action-title">Available Actions:</h5>
+                            <div class="action-buttons">
+                                <a class="btn btn-outline-dark btn-sm me-2" href="https://www.maipdf.com/pdf/hahachange.php" target="_blank">
+                                    <i class="fas fa-edit me-1"></i> Change File
+                                </a>
+                                <a href="../getresult.html" class="btn btn-outline-dark btn-sm" target="_blank">  
+                                    <i class="fas fa-list-alt me-1"></i> Access Records
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-box text-center">
+                        <div id="qrcode" class="qr-container"></div>
+                        <p><small>Scan QR Code To Read</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chinese Redirect Modal -->
+    <div class="modal fade" id="chinaRedirectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Access Optimization</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>检测到您可能位于中国大陆，推荐访问中文站点获得更快的访问速度。</p>
+                    <p>当前站点：国际站（全球加速）</p>
+                    <p>推荐站点：中文站（中国大陆优化）</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="https://maipdf.cn/maifile.php" class="btn btn-danger" target="_blank" rel="noopener">
+                        Visit China Site
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Stay on Global Site
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Reminder Modal -->
+    <div class="modal fade" id="loginReminderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Quick Tip</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    We recommend logging in before you upload. You can continue without login - your link will still work.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Continue as Guest
+                    </button>
+                    <button type="button" class="btn btn-primary" id="loginRecommendBtn">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Duplicate Filename Modal -->
+    <div class="modal fade" id="duplicateNameModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Same Filename Found</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="duplicateNameModalText">
+                    A file with this name already exists.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="duplicateNameRenameBtn" data-bs-dismiss="modal">Rename & Upload Again</button>
+                    <button type="button" class="btn btn-primary" id="duplicateNameContinueBtn">Use Existing File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer-custom py-3">
+    <div class="container">
+        <div class="small text-center text-muted">Copyright &copy; 2026 - MaiPDF</div>
+    </div>
+</footer>
+
+<div class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+</div>
+
+<script>
+document.cookie = "uploadedfile=notyet"; 
+
+// Toggle email input visibility
+document.getElementById("enableEmailValidation").addEventListener("change", function() {
+    var emailInput = document.getElementById("emailAddressesInput");
+    if (this.checked) {
+        emailInput.style.display = "block"; // Show email input
+    } else {
+        emailInput.style.display = "none"; // Hide email input
+    }
+});
+
+// Toggle Telegram alert panel visibility
+document.getElementById("enableTelegramAlert").addEventListener("change", function() {
+    var telegramPanel = document.getElementById("telegramBindPanel");
+    if (this.disabled) {
+        this.checked = false;
+        telegramPanel.style.display = "none";
+        return;
+    }
+    if (this.checked) {
+        telegramPanel.style.display = "block";
+    } else {
+        telegramPanel.style.display = "none";
+    }
+});
+
+// Initialize Chinese redirect modal
+document.addEventListener('DOMContentLoaded', function() {
+    const CHINA_MODAL_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+    const CHINA_MODAL_LAST_SHOWN_KEY = 'china_redirect_modal_last_shown';
+
+    // Check if user might be in China
+    const isChinese = () => {
+        const lang = navigator.language.toLowerCase();
+        const langs = navigator.languages?.map(l => l.toLowerCase()) || [lang];
+        return langs.some(l => l === 'zh-cn' || l.startsWith('zh-hans'));
+    };
+
+    const isChinaTimeZone = () => {
+        try {
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (['Asia/Shanghai', 'Asia/Chongqing', 'Asia/Urumqi'].includes(tz)) return true;
+        } catch(e) { /* Fallback */ }
+        return new Date().getTimezoneOffset() === -480;
+    };
+
+    const isChinaModalOnCooldown = () => {
+        try {
+            const lastShown = parseInt(localStorage.getItem(CHINA_MODAL_LAST_SHOWN_KEY) || '0', 10);
+            if (!lastShown) return false;
+            return (Date.now() - lastShown) < CHINA_MODAL_COOLDOWN_MS;
+        } catch (e) {
+            return false;
+        }
+    };
+
+    const markChinaModalShown = () => {
+        try {
+            localStorage.setItem(CHINA_MODAL_LAST_SHOWN_KEY, String(Date.now()));
+        } catch (e) {
+            // ignore storage errors
+        }
+    };
+
+    // Show modal if conditions met
+    if (isChinese() && isChinaTimeZone() && !isChinaModalOnCooldown()) {
+        markChinaModalShown();
+        const modal = new bootstrap.Modal('#chinaRedirectModal', {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.show();
+    }
+
+    const loginRecommendBtn = document.getElementById('loginRecommendBtn');
+    if (loginRecommendBtn) {
+        loginRecommendBtn.addEventListener('click', function() {
+            const loginBtn = document.getElementById('loginBtn');
+            const modalEl = document.getElementById('loginReminderModal');
+            const modalInstance = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+            if (loginBtn) {
+                loginBtn.click();
+            }
+        });
+    }
+
+    // Show login reminder on first dropzone click (once per session, only if not logged in)
+    const dropzoneEl = document.getElementById('dropz');
+    if (dropzoneEl) {
+        const showLoginReminder = () => {
+            const lastShown = parseInt(localStorage.getItem('login_reminder_last_ts') || '0', 10);
+            if (Date.now() - lastShown < 3600000) {
+                return;
+            }
+            const loginBtn = document.getElementById('loginBtn');
+            if (!loginBtn || loginBtn.style.display === 'none') {
+                return;
+            }
+            const loginReminderModal = new bootstrap.Modal('#loginReminderModal');
+            loginReminderModal.show();
+            localStorage.setItem('login_reminder_last_ts', String(Date.now()));
+        };
+
+        dropzoneEl.addEventListener('click', showLoginReminder, { once: true, capture: true });
+        dropzoneEl.addEventListener('pointerdown', showLoginReminder, { once: true, capture: true });
+
+        const dropzoneInput = dropzoneEl.querySelector('input[type=\"file\"]');
+        if (dropzoneInput) {
+            dropzoneInput.addEventListener('click', showLoginReminder, { once: true, capture: true });
+        }
+    }
+    
+    // Back to top button functionality
+    const backToTopButton = document.getElementById('backToTop');
+    
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            backToTopButton.classList.add('show');
+        } else {
+            backToTopButton.classList.remove('show');
+        }
+    });
+    
+    backToTopButton.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+});
+
+// Dropzone configuration
+if (typeof Dropzone !== "undefined") {
+    Dropzone.autoDiscover = false;
+}
+const CHUNK_THRESHOLD_BYTES = 5 * 1024 * 1024; // >5MB use chunk upload
+const CHUNK_SIZE_BYTES = 2 * 1024 * 1024;      // 2MB per chunk
+
+var myDropzone = new Dropzone("#dropz", {
+    url: "r2upload.php",
+    method: "post",
+    paramName: "file",
+    maxFiles: 1,
+    maxFilesize: 82,
+    chunking: false,               // enabled dynamically per file size
+    forceChunking: false,
+    chunkSize: CHUNK_SIZE_BYTES,
+    retryChunks: true,
+    retryChunksLimit: 3,
+    parallelChunkUploads: false,
+    acceptedFiles: ".png,.jpg,.jpeg,.gif,image/*,.pdf",
+    addRemoveLinks: true,
+    parallelUploads: 1,
+    autoProcessQueue: false,
+    dictDefaultMessage: 'Choose File<br><small style="font-style: italic;">Or Drop File Here</small>',
+    dictMaxFilesExceeded: "One file only",
+    dictResponseError: 'Failed!',
+    dictInvalidFileType: "Only *.pdf, *.png, *.jpeg are allowed",
+    dictFallbackMessage: "You have an Antique Browser",
+    dictFileTooBig: "Reach Size Limit.",
+    dictRemoveLinks: "Delete",
+    dictCancelUpload: "Cancel",
+    timeout: 190000,
+    
+    init: function() {
+        var dz = this;
+        var renderUploadStatus = function(text) {
+            var el = document.getElementById("pleaseupload");
+            if (el) {
+                el.innerHTML = text;
+            }
+        };
+        var duplicateNameModalEl = document.getElementById('duplicateNameModal');
+        var duplicateNameModalTextEl = document.getElementById('duplicateNameModalText');
+        var duplicateNameContinueBtn = document.getElementById('duplicateNameContinueBtn');
+        var duplicateNameRenameBtn = document.getElementById('duplicateNameRenameBtn');
+        var duplicateNameModal = (duplicateNameModalEl && typeof bootstrap !== 'undefined')
+            ? new bootstrap.Modal(duplicateNameModalEl)
+            : null;
+
+        var goStep2WithPath = function(pathValue, file, reusedExisting) {
+            document.cookie = "uploadedfile=success";
+            var a = pathValue || (fileplaceSHOW + (file?.name || ""));
+            if (dz.options.chunking) {
+                renderUploadStatus(reusedExisting ? "Existing file selected. Continue to Step 2." : "Upload completed (Chunk Mode): 100%");
+            } else {
+                renderUploadStatus(reusedExisting ? "Existing file selected. Continue to Step 2." : "Upload completed (Standard Mode): 100%");
+            }
+
+            if (!reusedExisting && file && (file.name == '作品集.pdf' || file.name == '简历.pdf'|| file.name == '作品.pdf')) {
+                var stepTitleWarn = document.getElementById("2step");
+                if (stepTitleWarn) stepTitleWarn.classList.add("compact-status");
+                document.getElementById("2step").innerHTML = "This filename may conflict with other files. Please rename it if possible.";
+                document.getElementById("2step").style.color = "green";  
+                simulateTyping("2step", "Please rename the file and upload again.", 100);
+                simulateTyping("2step3", "This filename is used too often and may conflict.", 100);
+            }
+            
+            document.getElementById("name").value = a;
+            var stepTitleSuccess = document.getElementById("2step");
+            if (stepTitleSuccess) stepTitleSuccess.classList.add("compact-status");
+            simulateTyping("2step", "Upload successful.\nStep 2: Set up reading times and session length", 180);
+            document.getElementById('section1').style.display = 'none';
+
+            // Update step indicators
+            document.getElementById('step-indicator-1').classList.add('completed');
+            document.getElementById('step-indicator-1').classList.remove('active');
+            document.getElementById('step-indicator-2').classList.add('active');
+            
+            if (file && file.name && file.name.toLowerCase().endsWith('.pdf') && !reusedExisting) {
+                console.log('Starting PDF optimization in background...');
+                
+                var processingData = {
+                    filename: file.name
+                };
+                
+                fetch('pdf_processor.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(processingData)
+                })
+                .then(response => response.text())
+                .then(result => {
+                    console.log('PDF linearization output:');
+                    console.log(result);
+                    
+                    console.log('Compression temporarily disabled');
+                    /*
+                    return fetch('compress.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(processingData)
+                    });
+                })
+                .then(response => response.text())
+                .then(result => {
+                    console.log('PDF compression output:');
+                    console.log(result);
+                    */
+                })
+                .catch(error => {
+                    console.error('PDF processing error:', error);
+                });
+            }
+            
+            // Automatically scroll to the form section (Step 2)
+            document.getElementById('section2').scrollIntoView({ behavior: 'smooth' });
+            
+            // Optional: Add a visual indicator to guide the user
+            setTimeout(function() {
+                document.getElementById('section2').classList.add('highlight-section');
+                setTimeout(function() {
+                    document.getElementById('section2').classList.remove('highlight-section');
+                }, 1500);
+            }, 800);
+        };
+
+        var checkExistingFileByName = async function(filename) {
+            const url = "r2upload.php?action=check_name&filename=" + encodeURIComponent(filename || "");
+            const response = await fetch(url, { method: 'GET', cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error("Filename check failed");
+            }
+            return response.json();
+        };
+
+        var askUseExistingFile = function(filename) {
+            return new Promise(function(resolve) {
+                if (!duplicateNameModal || !duplicateNameModalEl || !duplicateNameContinueBtn) {
+                    resolve(window.confirm(
+                        "A file with this name already exists.\n\n" +
+                        "OK: Use existing file and continue.\n" +
+                        "Cancel: Rename and upload again."
+                    ));
+                    return;
+                }
+
+                var decided = false;
+                if (duplicateNameModalTextEl) {
+                    duplicateNameModalTextEl.textContent = 'A file named "' + filename + '" already exists. Use it and continue?';
+                }
+
+                var cleanup = function() {
+                    duplicateNameContinueBtn.removeEventListener('click', onContinue);
+                    if (duplicateNameRenameBtn) duplicateNameRenameBtn.removeEventListener('click', onRename);
+                    duplicateNameModalEl.removeEventListener('hidden.bs.modal', onHidden);
+                };
+                var finish = function(choice) {
+                    if (decided) return;
+                    decided = true;
+                    cleanup();
+                    resolve(choice);
+                };
+                var onContinue = function() {
+                    finish(true);
+                    duplicateNameModal.hide();
+                };
+                var onRename = function() {
+                    finish(false);
+                };
+                var onHidden = function() {
+                    finish(false);
+                };
+
+                duplicateNameContinueBtn.addEventListener('click', onContinue, { once: true });
+                if (duplicateNameRenameBtn) duplicateNameRenameBtn.addEventListener('click', onRename, { once: true });
+                duplicateNameModalEl.addEventListener('hidden.bs.modal', onHidden, { once: true });
+                duplicateNameModal.show();
+            });
+        };
+
+        this.on("sending", function(file) {
+            if (this.options.chunking) {
+                var totalChunks = Math.ceil(file.size / CHUNK_SIZE_BYTES);
+                renderUploadStatus("Uploading (Chunk Mode): 0% - 0/" + totalChunks + " chunks");
+            } else {
+                renderUploadStatus("Uploading (Standard Mode): 0%");
+            }
+        });
+
+        this.on("uploadprogress", function(file, progress) {
+            var safeProgress = Math.max(0, Math.min(100, Math.round(progress || 0)));
+            if (this.options.chunking) {
+                var totalChunks = Math.ceil(file.size / CHUNK_SIZE_BYTES);
+                var doneChunks = Math.min(totalChunks, Math.floor((safeProgress / 100) * totalChunks));
+                renderUploadStatus("Uploading (Chunk Mode): " + safeProgress + "% - " + doneChunks + "/" + totalChunks + " chunks");
+            } else {
+                renderUploadStatus("Uploading (Standard Mode): " + safeProgress + "%");
+            }
+        });
+
+        this.on("addedfile", async function(file) {
+            // Decide upload mode per file: <=5MB full upload, >5MB chunk upload
+            this.options.chunking = file.size > CHUNK_THRESHOLD_BYTES;
+
+            var dzDefault = document.querySelector('div .dz-default');
+            if (dzDefault) {
+                dzDefault.style.display = 'none';
+            }
+            
+            if(file.name.endsWith('.PDF')){
+                alert('.PDF extention cannot be in Capital');
+                this.removeFile(file);
+                return;
+            }
+            
+            if(file.name.includes('#')){
+                alert('Remove the Special character in File Name');
+                simulateTyping("pleaseupload", "Remove the Special character in File Name", 180);
+                this.removeFile(file);
+                return;
+            }
+            
+            if(file.size/1024/1024 > 80){
+                simulateTyping("pleaseupload", "Please Upload Pdf files within 90M", 150);
+                this.removeFile(file);
+                return;
+            }
+
+            if (this.options.chunking) {
+                console.log("Chunk upload enabled for large file:", file.name, file.size);
+            } else {
+                console.log("Standard upload enabled for small file:", file.name, file.size);
+            }
+            
+            if(file.name.length == 17 && file.name.startsWith('16458')){
+                localStorage.setItem("shenfen", "bad");
+                window.location.href = "../bad.html";   
+                return;
+            }
+
+            try {
+                const existsResult = await checkExistingFileByName(file.name);
+                if (existsResult && existsResult.exists) {
+                    const useExisting = await askUseExistingFile(file.name);
+                    if (!useExisting) {
+                        document.cookie = "uploadedfile=notyet";
+                        renderUploadStatus("Upload cancelled. Rename the file and try again.");
+                        this.removeFile(file);
+                        return;
+                    }
+
+                    goStep2WithPath(existsResult.path || (fileplaceSHOW + file.name), file, true);
+                    this.removeFile(file);
+                    return;
+                }
+            } catch (err) {
+                console.warn("Filename pre-check failed. Continue with upload.", err);
+            }
+
+            this.processFile(file);
+        });       
+        
+        this.on("success", function(file, data) {
+            var uploadResp = data;
+            if (typeof uploadResp === "string") {
+                try {
+                    uploadResp = JSON.parse(uploadResp);
+                } catch (e) {
+                    uploadResp = {};
+                }
+            }
+            var uploadStatus = (uploadResp && typeof uploadResp.status === "string") ? uploadResp.status : "";
+            if (uploadStatus === "chunk_received") {
+                var received = Number(uploadResp.received || 0);
+                var total = Number(uploadResp.totalChunks || 0);
+                if (this.options.chunking && total > 0) {
+                    var chunkProgress = Math.max(0, Math.min(100, Math.round((received / total) * 100)));
+                    renderUploadStatus("Uploading (Chunk Mode): " + chunkProgress + "% - " + received + "/" + total + " chunks");
+                }
+                return;
+            }
+            if (uploadStatus && uploadStatus !== "success") {
+                renderUploadStatus("Upload failed. Please retry.");
+                console.error("Upload failed:", uploadResp);
+                return;
+            }
+            var serverPath = (uploadResp && typeof uploadResp.path === "string" && uploadResp.path)
+                ? uploadResp.path
+                : (fileplaceSHOW + file.name);
+            var reusedExisting = !!(uploadResp && uploadResp.reused_existing);
+            goStep2WithPath(serverPath, file, reusedExisting);
+        });
+        
+        this.on("error", function(file, data) {
+            renderUploadStatus("Upload failed. Please retry.");
+            console.log('fail');
+            var message = '';
+            if (file.accepted) {
+                $.each(data, function(key, val) {
+                    message = message + val[0] + ';';
+                });
+                alert(message);
+            }
+        });
+        
+        this.on("removedfile", function(file) {
+            if (typeof angular !== 'undefined' && angular.element && document.querySelector('div .inmodal')) {
+                var appElement = document.querySelector('div .inmodal');
+                var file_id = angular.element(appElement).scope().file_id;
+                if (file_id) {
+                    $.post('/admin/del/' + file_id, {'_method': 'DELETE'}, function(data) {
+                        console.log('Deleted:' + data.message);
+                    });
+                }
+                angular.element(appElement).scope().file_id = 0;
+            }
+            
+            var dzDefault = document.querySelector('div .dz-default');
+            if (dzDefault) {
+                dzDefault.style.display = 'block';
+            }
+        });
+    }
+});
+
+// IP Check and security
+var xmlhttp = new XMLHttpRequest();
+xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        var res = xmlhttp.responseText;
+        var n = res.indexOf("hot");
+        console.log(res);
+        
+        if(n > 1) {
+            if (typeof(Storage) !== "undefined") {
+                localStorage.setItem("shenfen", "bad");
+            } 
+            window.location.href = "../bad.html";
+            return false;
+        }
+        localStorage.setItem("shenfen", "princess");
+    }
+}
+
+if (typeof(Storage) !== "undefined") {
+    var goodbad = localStorage.getItem("shenfen");
+    if(goodbad == 'bad') {
+        window.location.href = "../bad.html";  
+    } else {
+        var pleaseupload = document.getElementById("pleaseupload");
+        if (pleaseupload && typeof dizhi !== 'undefined') {
+            updateNetworkInfoLabel();
+            xmlhttp.open("GET", "../log.php?pic=" + dizhi, true);
+            xmlhttp.send();
+        }
+        console.log(goodbad); 
+    }
+}
+
+// Copy function
+let copyFeedbackTimer = null;
+function myFunction() {
+    var copyText = document.getElementById("myInput");
+    var copied = document.getElementById("Copied");
+    var copyBtn = document.getElementById("copyLinkBtn");
+
+    const setCopiedButton = function(ok) {
+        if (!copyBtn) return;
+        copyBtn.classList.remove("copied-state");
+        copyBtn.innerHTML = '<i class="fas fa-copy me-2"></i>Copy This Link';
+        if (ok) {
+            copyBtn.classList.add("copied-state");
+            copyBtn.innerHTML = '<i class="fas fa-check me-2"></i>Copied';
+        }
+        if (copyFeedbackTimer) {
+            clearTimeout(copyFeedbackTimer);
+        }
+        copyFeedbackTimer = setTimeout(function() {
+            if (!copyBtn) return;
+            copyBtn.classList.remove("copied-state");
+            copyBtn.innerHTML = '<i class="fas fa-copy me-2"></i>Copy This Link';
+        }, 1600);
+    };
+
+    if (!copyText || !copyText.value) {
+        setCopiedButton(false);
+        return;
+    }
+
+    const fallbackCopy = function() {
+        try {
+            copyText.focus();
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            var ok = document.execCommand("copy");
+            setCopiedButton(!!ok);
+        } catch (e) {
+            setCopiedButton(false);
+        }
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(copyText.value)
+            .then(function() { setCopiedButton(true); })
+            .catch(function() { fallbackCopy(); });
+    } else {
+        fallbackCopy();
+    }
+
+    if (copied) {
+        copied.textContent = '';
+        copied.classList.remove("visible", "copy-ok", "copy-fail");
+    }
+}
+
+// QR Code generation
+var qrcode;
+try {
+    qrcode = new QRCode(document.getElementById("qrcode"), {
+        width: 127,
+        height: 127,
+        colorDark: "#be847d",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+} catch (e) {
+    console.log("QR code initialization error: ", e);
+}
+
+function makeCode() {    
+    if (!qrcode) return;
+    
+    var elText = document.getElementById("myInput");
+    var textToEncode = (elText && elText.value) ? elText.value : "https://maipdf.com";
+    try {
+        qrcode.makeCode(textToEncode);
+        
+        if (elText && elText.value && typeof bt !== 'undefined' && bt != 'xxx') {
+            simulateTyping('cishu', 'Please review the generated results. If you need a new link, refresh the page.', 120);
+        }
+    } catch (e) {
+        console.log("QR code generation error: ", e);
+    }
+}
+
+// Call makeCode when document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(makeCode, 300);
+
+    // Add event listeners to the input
+    $("#myInput").on("blur", function() {
+        makeCode();
+    }).on("keydown", function(e) {
+        if (e.keyCode == 13) {
+            makeCode();
+        }
+    });
+
+    // Add focus and tooltip for the access records button
+    const accessButton = document.querySelector('.btn-access-records');
+    if (accessButton) {
+        setTimeout(function() {
+            // Add tooltip message that appears
+            const tooltip = document.createElement('div');
+            tooltip.className = 'access-records-tooltip';
+            tooltip.textContent = 'Click here to view who accessed your document';
+            document.body.appendChild(tooltip);
+            
+            // Position the tooltip near the button
+            const buttonRect = accessButton.getBoundingClientRect();
+            tooltip.style.top = (buttonRect.top + window.scrollY - 40) + 'px';
+            tooltip.style.left = (buttonRect.left + window.scrollX + buttonRect.width/2 - 125) + 'px';
+            
+            // Show the tooltip
+            setTimeout(function() {
+                tooltip.classList.add('visible');
+                
+                // Hide it after a few seconds
+                setTimeout(function() {
+                    tooltip.classList.remove('visible');
+                    setTimeout(function() {
+                        tooltip.remove();
+                    }, 500);
+                }, 4000);
+            }, 1000);
+        }, 2000);
+    }
+});
+
+// Limit input validation
+const inputElement = document.getElementById("limit");
+const darkmodeCheckbox = document.getElementById("darkmode");
+const darkmodeLimitNote = document.getElementById("darkmodeLimitNote");
+const telegramAlertCheckbox = document.getElementById("enableTelegramAlert");
+const telegramLimitNote = document.getElementById("telegramLimitNote");
+const telegramBindPanel = document.getElementById("telegramBindPanel");
+
+const updateDarkmodeAvailability = (value) => {
+    if (!darkmodeCheckbox) return;
+    const limitValue = parseFloat(value);
+    const overLimit = !isNaN(limitValue) && limitValue > 10000;
+    darkmodeCheckbox.disabled = overLimit;
+    if (overLimit) {
+        darkmodeCheckbox.checked = false;
+        if (darkmodeLimitNote) {
+            darkmodeLimitNote.style.display = 'block';
+        }
+    } else if (darkmodeLimitNote) {
+        darkmodeLimitNote.style.display = 'none';
+    }
+
+    if (telegramAlertCheckbox) {
+        telegramAlertCheckbox.disabled = overLimit;
+        if (overLimit) {
+            telegramAlertCheckbox.checked = false;
+            if (telegramBindPanel) {
+                telegramBindPanel.style.display = 'none';
+            }
+            if (telegramLimitNote) {
+                telegramLimitNote.style.display = 'block';
+            }
+        } else if (telegramLimitNote) {
+            telegramLimitNote.style.display = 'none';
+        }
+    }
+};
+
+if (inputElement) {
+    inputElement.addEventListener("change", function(event) {
+        let userInput = event.target.value;
+        simulateTyping("cishu", "Unlimited open will be applied if Access-Limit is over 10k, and no access record will be logged.", 120);
+        
+        if(userInput < 3) {
+            alert('3 is the Least Number');
+        }
+
+        updateDarkmodeAvailability(userInput);
+    });
+    inputElement.addEventListener("input", function(event) {
+        updateDarkmodeAvailability(event.target.value);
+    });
+    updateDarkmodeAvailability(inputElement.value);
+}
+
+// Expiration preset + UTC display
+document.addEventListener('DOMContentLoaded', () => {
+    const preset = document.getElementById('expiration_preset');
+    const custom = document.getElementById('expiration_custom_days');
+    const hidden = document.getElementById('expiration_day');
+    const hiddenTs = document.getElementById('expiration_ts');
+    const result = document.getElementById('expiration_result');
+    const tzSelect = document.getElementById('timezone_tz');
+    const tzRow = document.getElementById('timezone_row');
+    const localResult = document.getElementById('expiration_local');
+    if (!preset || !custom || !hidden || !hiddenTs || !result || !tzSelect || !localResult) return;
+
+    const pad2 = (n) => String(n).padStart(2, '0');
+    let lastExpiry = null;
+    let userTouchedTz = false;
+
+    const hideExpirationExtras = () => {
+        if (result) result.style.display = 'none';
+        if (tzRow) tzRow.style.display = 'none';
+        if (localResult) localResult.style.display = 'none';
+    };
+
+    const updateExpiration = () => {
+        const v = preset.value;
+        let days = null;
+        console.log('[expiration] updateExpiration preset=', v);
+
+        if (v === '1h') {
+            days = 1 / 24;
+        } else if (v === '3h') {
+            days = 3 / 24;
+        } else if (v === '24h') {
+            days = 1;
+        } else if (v === '5d') {
+            days = 5;
+        } else if (v === 'custom') {
+            const n = parseFloat(custom.value);
+            if (!isNaN(n) && n > 0) {
+                days = n;
+            }
+        }
+
+        if (v === 'custom') {
+            custom.style.display = 'block';
+        } else {
+            custom.style.display = 'none';
+            custom.value = '';
+        }
+
+        if (v === 'unlimited') {
+            hidden.value = '';
+            hiddenTs.value = '';
+            result.textContent = 'UTC expiry time: Unlimited';
+            lastExpiry = null;
+            if (result) result.style.display = '';
+            if (tzRow) tzRow.style.display = 'none';
+            if (localResult) localResult.style.display = 'none';
+            updateLocalTime();
+            return;
+        }
+
+        if (days === null) {
+            hidden.value = '';
+            hiddenTs.value = '';
+            result.textContent = 'UTC expiry time: -';
+            lastExpiry = null;
+            hideExpirationExtras();
+            updateLocalTime();
+            return;
+        }
+
+        hidden.value = String(days);
+        const now = new Date();
+        const expiry = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+        lastExpiry = expiry;
+        hiddenTs.value = String(Math.floor(expiry.getTime() / 1000));
+        const utcText = `${expiry.getUTCFullYear()}-${pad2(expiry.getUTCMonth() + 1)}-${pad2(expiry.getUTCDate())} ${pad2(expiry.getUTCHours())}:${pad2(expiry.getUTCMinutes())}:${pad2(expiry.getUTCSeconds())} UTC`;
+        result.textContent = `UTC expiry time: ${utcText}`;
+        if (result) result.style.display = '';
+        if (tzRow) tzRow.style.display = 'grid';
+        if (localResult) localResult.style.display = '';
+        if (!userTouchedTz) {
+            autoSelectTimeZone();
+        } else {
+            updateLocalTime();
+        }
+    };
+
+    const tzData = [
+        { id: 'UTC', label: 'UTC' },
+        { id: 'Asia/Shanghai', label: 'China (Asia/Shanghai)' },
+        { id: 'Asia/Tokyo', label: 'Japan (Asia/Tokyo)' },
+        { id: 'Asia/Seoul', label: 'Korea (Asia/Seoul)' },
+        { id: 'Asia/Singapore', label: 'Singapore (Asia/Singapore)' },
+        { id: 'Asia/Kolkata', label: 'India (Asia/Kolkata)' },
+        { id: 'Europe/London', label: 'UK (Europe/London)' },
+        { id: 'Europe/Berlin', label: 'Germany (Europe/Berlin)' },
+        { id: 'Europe/Paris', label: 'France (Europe/Paris)' },
+        { id: 'Asia/Dubai', label: 'UAE (Asia/Dubai)' },
+        { id: 'Australia/Sydney', label: 'Australia (Sydney)' },
+        { id: 'America/Sao_Paulo', label: 'Brazil (Sao Paulo)' },
+        { id: 'Africa/Johannesburg', label: 'South Africa (Johannesburg)' },
+        { id: 'Europe/Moscow', label: 'Russia (Moscow)' },
+        { id: 'America/Toronto', label: 'Canada (Toronto)' },
+        { id: 'America/New_York', label: 'US Eastern (New York)' },
+        { id: 'America/Chicago', label: 'US Central (Chicago)' },
+        { id: 'America/Denver', label: 'US Mountain (Denver)' },
+        { id: 'America/Los_Angeles', label: 'US Pacific (Los Angeles)' },
+        { id: 'America/Anchorage', label: 'US Alaska (Anchorage)' },
+        { id: 'Pacific/Honolulu', label: 'US Hawaii (Honolulu)' }
+    ];
+
+    const buildZoneOptions = () => {
+        tzSelect.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Time zone';
+        tzSelect.appendChild(placeholder);
+        tzData.forEach((z) => {
+            const opt = document.createElement('option');
+            opt.value = z.id;
+            opt.textContent = z.label;
+            tzSelect.appendChild(opt);
+        });
+    };
+
+    const formatInTimeZone = (date, timeZone) => {
+        try {
+            return new Intl.DateTimeFormat('en-US', {
+                timeZone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).format(date);
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const updateLocalTime = () => {
+        if (!lastExpiry) {
+            localResult.textContent = 'Local time: -';
+            return;
+        }
+        const tzId = tzSelect.value;
+        if (!tzId) {
+            localResult.textContent = 'Local time: -';
+            return;
+        }
+        const formatted = tzId ? formatInTimeZone(lastExpiry, tzId) : null;
+        if (!formatted) {
+            localResult.textContent = 'Local time: -';
+            return;
+        }
+        localResult.textContent = `Local time: ${formatted} (${tzId})`;
+    };
+
+    const autoSelectTimeZone = () => {
+        let browserTz = '';
+        try {
+            browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        } catch (e) {
+            browserTz = '';
+        }
+        const normalizeToUTC = (tz) => {
+            if (!tz) return 'UTC';
+            if (tz === 'Etc/UTC' || tz === 'Etc/GMT' || tz === 'GMT') return 'UTC';
+            if (tz.startsWith('UTC') || tz.startsWith('GMT')) return 'UTC';
+            return tz;
+        };
+
+        const getOffsetMinutes = (tzId, date) => {
+            const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: tzId,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).formatToParts(date);
+            const map = {};
+            parts.forEach((p) => {
+                if (p.type !== 'literal') map[p.type] = p.value;
+            });
+            const asUTC = Date.UTC(
+                Number(map.year),
+                Number(map.month) - 1,
+                Number(map.day),
+                Number(map.hour),
+                Number(map.minute),
+                Number(map.second)
+            );
+            return Math.round((asUTC - date.getTime()) / 60000);
+        };
+
+        const pickByOffset = (date) => {
+            const localOffset = -date.getTimezoneOffset();
+            let best = null;
+            let bestDiff = Infinity;
+            tzData.forEach((z) => {
+                try {
+                    const off = getOffsetMinutes(z.id, date);
+                    const diff = Math.abs(off - localOffset);
+                    if (diff < bestDiff) {
+                        bestDiff = diff;
+                        best = z;
+                    }
+                } catch (e) {
+                    // ignore invalid tz
+                }
+            });
+            return best;
+        };
+
+        browserTz = normalizeToUTC(browserTz);
+        const direct = tzData.find((z) => z.id === browserTz);
+        if (direct) {
+            tzSelect.value = direct.id;
+            updateLocalTime();
+            return;
+        }
+
+        const fallback = pickByOffset(new Date());
+        if (fallback) {
+            tzSelect.value = fallback.id;
+            updateLocalTime();
+            return;
+        }
+
+        const dynamic = document.createElement('option');
+        dynamic.value = browserTz;
+        dynamic.textContent = `UTC ${browserTz}`;
+        tzSelect.appendChild(dynamic);
+        tzSelect.value = browserTz;
+        updateLocalTime();
+    };
+
+    preset.addEventListener('change', updateExpiration);
+    custom.addEventListener('input', updateExpiration);
+    tzSelect.addEventListener('change', () => {
+        userTouchedTz = true;
+        updateLocalTime();
+    });
+
+    buildZoneOptions();
+    hideExpirationExtras();
+    updateExpiration();
+});
+
+// Typing animation
+setTimeout(function() {
+    simulateTyping("1step", "1: Upload your PDF file", 100);
+}, 500);
+
+function simulateTyping(selectid, text, delay) {
+    let index = 0;
+    const textarea = document.getElementById(selectid);
+    if (!textarea) return;
+    
+    textarea.innerHTML = '';
+    
+    function typeNextCharacter() {
+        if (index < text.length) {
+            const character = text.charAt(index);
+            
+            if (character === '\n') {
+                textarea.innerHTML += '<br>';
+                index++;
+            } else {
+                textarea.innerHTML += character;
+                index++;
+            }
+            
+            setTimeout(typeNextCharacter, delay);
+        }
+    }
+    
+    typeNextCharacter();
+}
+</script>
+
+<script>
+// Submit Step2 via AJAX (no full page form submission)
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form[role="form"][action="maipdf2026_backend.php"]');
+  const chatIdInput = document.getElementById('telegram-chat-id');
+  const nameInput = document.getElementById('name');
+  const generateProgressEl = document.getElementById('generateProgress');
+  const createNewOneBtn = document.getElementById('createNewOneBtn');
+  const MIN_GENERATE_WAIT_MS = 2200;
+  const R2_SYNC_HOLD_MS = 700;
+  if (!form) return;
+  let isGenerating = false;
+  let hasGeneratedLink = false;
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const waitAtLeast = async (startedAt, minMs) => {
+    const elapsed = Date.now() - startedAt;
+    if (elapsed < minMs) {
+      await sleep(minMs - elapsed);
+    }
+  };
+
+  const setGenerateProgress = (message, kind = 'working') => {
+    if (!generateProgressEl) return;
+    generateProgressEl.classList.remove('is-error', 'is-success');
+    if (kind === 'error') generateProgressEl.classList.add('is-error');
+    if (kind === 'success') generateProgressEl.classList.add('is-success');
+    generateProgressEl.innerHTML = message;
+    generateProgressEl.style.display = '';
+  };
+
+  const hideGenerateProgress = () => {
+    if (!generateProgressEl) return;
+    generateProgressEl.style.display = 'none';
+  };
+
+  if (createNewOneBtn) {
+    createNewOneBtn.addEventListener('click', () => {
+      const restartUrl = new URL(window.location.href);
+      restartUrl.searchParams.set('new', '1');
+      restartUrl.hash = 'section1';
+      window.location.assign(restartUrl.toString());
+    });
+  }
+
+  const extractTelegramData = (htmlText) => {
+    console.log('[TG-DEBUG] Backend HTML length:', htmlText ? htmlText.length : 0);
+    const match = htmlText.match(/var\s+telegramNotificationData\s*=\s*(\{[\s\S]*?\});/);
+    if (!match || !match[1]) {
+      console.warn('[TG-DEBUG] telegramNotificationData not found in backend HTML.');
+      return null;
+    }
+    try {
+      const parsed = JSON.parse(match[1]);
+      console.log('[TG-DEBUG] telegramNotificationData parsed:', parsed);
+      return parsed;
+    } catch (e) {
+      console.error('[TG-DEBUG] Failed to parse telegramNotificationData:', e);
+      return null;
+    }
+  };
+
+  const escapeInline = (text) => String(text || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+  const normalizeResultMeta = () => {
+    const linkEl = document.getElementById('myInput');
+    const msgEl = document.getElementById('result-message');
+    const passEl = document.getElementById('result-password');
+    if (!msgEl || !passEl) return;
+
+    const fullLink = (linkEl?.value || '').trim();
+    const codeMatch = fullLink.match(/\/file\/([^@\/]+)@pdf/i);
+    const readCode = codeMatch ? codeMatch[1] : 'Open link code';
+
+    const passTextRaw = (passEl.textContent || '').trim();
+    let modifyCode = passTextRaw
+      .replace(/^Password:\s*/i, '')
+      .replace(/^Modify Code:\s*/i, '')
+      .replace(/^"|"$/g, '')
+      .trim();
+    if (!modifyCode || /To Del\.MOD Link/i.test(modifyCode)) {
+      modifyCode = 'Manage link code';
+    }
+
+    msgEl.innerHTML = `<strong>Read Code:</strong> <code class="result-chip">${escapeInline(readCode)}</code>`;
+    passEl.innerHTML = `<strong>Modify Code:</strong> <code class="result-chip">${escapeInline(modifyCode)}</code>`;
+  };
+
+  const renderResultFromBackendHtml = (htmlText) => {
+    console.log('[TG-DEBUG] renderResultFromBackendHtml called.');
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlText, 'text/html');
+
+    const linkShort = (doc.getElementById('pdf-link-display')?.textContent || '').trim();
+    const linkFull = (doc.getElementById('myInput')?.value || '').trim();
+    const resultMessage = (doc.getElementById('result-message')?.textContent || '').trim();
+    const resultPassword = (doc.getElementById('result-password')?.textContent || '').trim();
+    const r2MessageText = (doc.getElementById('result-r2-status')?.textContent || '').trim();
+    const r2Meta = doc.getElementById('r2-upload-meta');
+    const r2Status = (r2Meta?.getAttribute('data-status') || '').trim();
+    const r2Message = (r2Meta?.getAttribute('data-message') || r2MessageText || '').trim();
+    const r2HttpStatus = (r2Meta?.getAttribute('data-http-status') || '').trim();
+    const r2ResponseSnippet = (r2Meta?.getAttribute('data-response-snippet') || '').trim();
+
+    if (r2Status === 'upload_success') {
+      console.log('[R2]', r2Message || 'upload_success');
+    } else if (r2Status) {
+      console.error('[R2]', r2Status, r2Message || 'upload_failed');
+      if (r2HttpStatus) console.warn('[R2] HTTP:', r2HttpStatus);
+      if (r2ResponseSnippet) console.warn('[R2] Response:', r2ResponseSnippet);
+    } else {
+      console.warn('[R2] No structured status returned by backend.');
+    }
+
+    if (!linkFull) {
+      throw new Error('Backend did not return generated link.');
+    }
+
+    const shortEl = document.getElementById('pdf-link-display');
+    const inputEl = document.getElementById('myInput');
+    const msgEl = document.getElementById('result-message');
+    const passEl = document.getElementById('result-password');
+    const r2El = document.getElementById('result-r2-status');
+    const contact = document.getElementById('contact');
+    const copied = document.getElementById('Copied');
+
+    if (shortEl) shortEl.textContent = linkShort;
+    if (inputEl) inputEl.value = linkFull;
+    if (msgEl) msgEl.textContent = resultMessage;
+    if (passEl && resultPassword) passEl.textContent = resultPassword;
+    if (r2El) r2El.textContent = r2Message || 'R2 upload status unavailable.';
+    if (copied) {
+      copied.textContent = '';
+      copied.classList.remove('visible', 'copy-ok', 'copy-fail');
+    }
+
+    normalizeResultMeta();
+
+    if (contact) contact.style.display = '';
+
+    const s1 = document.getElementById('step-indicator-1');
+    const s2 = document.getElementById('step-indicator-2');
+    const s3 = document.getElementById('step-indicator-3');
+    if (s1) { s1.classList.add('completed'); s1.classList.remove('active'); }
+    if (s2) { s2.classList.add('completed'); s2.classList.remove('active'); }
+    if (s3) s3.classList.add('active');
+
+    if (typeof makeCode === 'function') {
+      makeCode();
+    }
+
+    const tgData = extractTelegramData(htmlText);
+    if (tgData) {
+      console.log('[TG-DEBUG] Telegram data found; assigning to window.telegramNotificationData.');
+      window.telegramNotificationData = tgData;
+      if (typeof window.sendTelegramNotification === 'function') {
+        console.log('[TG-DEBUG] sendTelegramNotification exists; invoking now.');
+        window.sendTelegramNotification();
+      } else {
+        console.error('[TG-DEBUG] sendTelegramNotification is not defined on window.');
+      }
+    } else {
+      console.warn('[TG-DEBUG] Telegram data missing; notification send skipped.');
+    }
+
+    if (contact) {
+      contact.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (isGenerating) {
+      return;
+    }
+    if (hasGeneratedLink) {
+      setGenerateProgress('<i class="fas fa-circle-check me-1"></i> Link already created. Click "Create New One" to start from Step 1.', 'success');
+      return;
+    }
+    console.log('[TG-DEBUG] Step2 submit started.');
+
+    const v = (chatIdInput?.value || '').trim();
+    console.log('[TG-DEBUG] chat_id input value:', v || '(empty)');
+    if (v && !/^\d+$/.test(v)) {
+      if (chatIdInput) chatIdInput.value = '';
+      alert('Telegram chat_id must be numeric.');
+      console.warn('[TG-DEBUG] Non-numeric chat_id blocked.');
+      return;
+    }
+
+    const uploadedFilePath = (nameInput?.value || '').trim();
+    console.log('[TG-DEBUG] Uploaded file path value:', uploadedFilePath || '(empty)');
+    if (!uploadedFilePath || uploadedFilePath === 'File') {
+      alert('Please upload a file first.');
+      console.warn('[TG-DEBUG] Missing uploaded file path; submit blocked.');
+      return;
+    }
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const oldText = submitBtn ? submitBtn.textContent : '';
+    const startedAt = Date.now();
+    let finishedOk = false;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-1"></i> Generating...';
+    }
+    isGenerating = true;
+    setGenerateProgress('<i class="fas fa-circle-notch fa-spin me-1"></i> Generating secure link...');
+
+    try {
+      const formData = new FormData(form);
+      console.log('[TG-DEBUG] Posting form to backend:', form.action);
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin'
+      });
+      console.log('[TG-DEBUG] Backend response status:', response.status);
+      const htmlText = await response.text();
+      console.log('[Generate] backend response length:', htmlText.length);
+      console.log('[TG-DEBUG] Backend response text received.');
+      setGenerateProgress('<i class="fas fa-upload me-1"></i> Finalizing and syncing to R2...');
+      await waitAtLeast(startedAt, MIN_GENERATE_WAIT_MS);
+      await sleep(R2_SYNC_HOLD_MS);
+      renderResultFromBackendHtml(htmlText);
+      finishedOk = true;
+      hasGeneratedLink = true;
+      setGenerateProgress('<i class="fas fa-check-circle me-1"></i> Secure link is ready.', 'success');
+      if (createNewOneBtn) {
+        createNewOneBtn.style.display = '';
+      }
+      await sleep(900);
+      setGenerateProgress('<i class="fas fa-circle-check me-1"></i> Link created. Click "Create New One" if you want to generate another.', 'success');
+    } catch (err) {
+      console.error('[TG-DEBUG] Submit/fetch failed:', err);
+      console.error('Generate link failed:', err);
+      setGenerateProgress('<i class="fas fa-triangle-exclamation me-1"></i> Generation failed. Please retry.', 'error');
+      alert('Generate link failed. Please retry.');
+    } finally {
+      isGenerating = false;
+      if (submitBtn) {
+        if (finishedOk) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fas fa-check me-1"></i> Link Created';
+        } else {
+          submitBtn.disabled = false;
+          submitBtn.textContent = oldText || 'Create Secure Link';
+        }
+      }
+      if (!finishedOk) {
+        await sleep(1800);
+        hideGenerateProgress();
+      }
+    }
+  });
+});
+</script>
+
+<!-- Firebase Authentication -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA-Y2zgMaXR08CYjS3HrucYi9xlcMr2_wQ",
+        authDomain: "maipdf-login.firebaseapp.com",
+        projectId: "maipdf-login",
+        storageBucket: "maipdf-login.firebasestorage.app",
+        messagingSenderId: "150464233488",
+        appId: "1:150464233488:web:b365ab4e4a52eca157ca95",
+        measurementId: "G-997G0FQK2H"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+        prompt: "select_account"
+    });
+    
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const guestBtn = document.getElementById("guestBtn");
+    const userInfo = document.getElementById("userInfo");
+    const controlBtn = document.getElementById("controlpanel");
+    
+    // Login button
+    loginBtn.addEventListener("click", async () => {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            console.log("Login successful:", user);
+
+            // Call backend registration API
+            fetch("../6/firebase-register.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+               
+                body: JSON.stringify({
+                    email: user.email,
+                    uid: user.uid
+                })
+            }).then(res => res.json()).then(data => {
+                console.log("Registration API response:", data);
+            });
+
+        } catch (error) {
+            console.error("Login failed:", error);
+        }
+    });
+
+    function doLogout() {
+        signOut(auth).then(() => {
+            console.log("Logged out");
+            location.reload();
+        }).catch(err => console.error("Logout failed:", err));
+    }
+    logoutBtn.addEventListener("click", doLogout);
+    const headerLogoutBtn = document.getElementById("headerLogoutBtn");
+    if (headerLogoutBtn) headerLogoutBtn.addEventListener("click", doLogout);
+
+    // Auth state listener (automatically check if logged in on page load)
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            loginBtn.style.display = "none";
+            if (guestBtn) guestBtn.style.display = "none";
+            logoutBtn.style.display = "inline-block";
+            controlBtn.style.display = "inline-block";
+            const headerDropdown = document.getElementById("headerLoginDropdown");
+            if (headerDropdown) headerDropdown.style.display = "inline-block";
+
+            userInfo.innerHTML = `
+                <p>Welcome back: <strong>${user.email}</strong></p>
+            `;
+
+            // Send email and uid to PHP to write to session
+            fetch("../6/firebase-session-login.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: user.email,
+                    uid: user.uid
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "ok") {
+                    // User verification successful
+                } else {
+                    console.warn("User verification failed:", data);
+                }
+            })
+            .catch(err => {
+                console.error("Request failed:", err);
+            });
+
+        } else {
+            loginBtn.style.display = "inline-block";
+            if (guestBtn) guestBtn.style.display = "inline-block";
+            logoutBtn.style.display = "none";
+            controlBtn.style.display = "none";
+            const headerDropdown = document.getElementById("headerLoginDropdown");
+            if (headerDropdown) headerDropdown.style.display = "none";
+            userInfo.innerHTML = ``;
+        }
+    });
+
+    const telegramStatusEls = document.querySelectorAll(".telegram-status");
+    const telegramRefreshBtns = document.querySelectorAll(".telegram-refresh");
+    const telegramChatIdInput = document.getElementById("telegram-chat-id");
+    const telegramBindHint = document.getElementById("telegramBindHint");
+    const TELEGRAM_REFRESH_DEFAULT_HTML = '<i class="fas fa-search me-1"></i> Get chat_id';
+
+    const setTelegramGuidanceVisible = (visible) => {
+        telegramStatusEls.forEach((el) => {
+            el.style.display = visible ? '' : 'none';
+        });
+        if (telegramBindHint) {
+            telegramBindHint.style.display = visible ? '' : 'none';
+        }
+    };
+
+    const setTelegramRefreshDefault = () => {
+        telegramRefreshBtns.forEach((btn) => {
+            btn.disabled = false;
+            btn.classList.remove('linked-success');
+            btn.innerHTML = TELEGRAM_REFRESH_DEFAULT_HTML;
+        });
+        setTelegramGuidanceVisible(true);
+    };
+
+    const setTelegramRefreshLinked = () => {
+        telegramRefreshBtns.forEach((btn) => {
+            btn.classList.add('linked-success');
+            btn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Linked';
+            btn.disabled = true;
+        });
+        setTelegramGuidanceVisible(false);
+    };
+
+    setTelegramRefreshDefault();
+
+    // Worker API URL
+    const WORKER_API_URL = 'https://fetch.maipdf.com';
+    let currentTelegramToken = null;
+    const savedTelegramToken = sessionStorage.getItem('telegram_bind_token');
+    if (savedTelegramToken) {
+        currentTelegramToken = savedTelegramToken;
+        const tokenInput = document.getElementById('telegram-token');
+        if (tokenInput) {
+            tokenInput.value = savedTelegramToken;
+        }
+    }
+
+    const generateTelegramToken = async () => {
+        try {
+            if (currentTelegramToken) {
+                return currentTelegramToken;
+            }
+
+            const parseUserAgent = (ua) => {
+                if (!ua) return 'Unknown';
+                
+                let browser = 'Unknown';
+                let os = 'Unknown';
+                
+                if (ua.includes('Chrome') && !ua.includes('Edg')) {
+                    browser = 'Chrome';
+                } else if (ua.includes('Firefox')) {
+                    browser = 'Firefox';
+                } else if (ua.includes('Safari') && !ua.includes('Chrome')) {
+                    browser = 'Safari';
+                } else if (ua.includes('Edg')) {
+                    browser = 'Edge';
+                } else if (ua.includes('Opera') || ua.includes('OPR')) {
+                    browser = 'Opera';
+                }
+                
+                if (ua.includes('Windows')) {
+                    os = 'Windows';
+                } else if (ua.includes('Mac OS X') || ua.includes('Macintosh')) {
+                    os = 'macOS';
+                } else if (ua.includes('Linux')) {
+                    os = 'Linux';
+                } else if (ua.includes('Android')) {
+                    os = 'Android';
+                } else if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) {
+                    os = 'iOS';
+                }
+                
+                return `${browser} on ${os}`;
+            };
+            
+            const userIP = typeof dizhi !== 'undefined' ? dizhi : '';
+            
+            const simpleUA = parseUserAgent(navigator.userAgent);
+            
+            const response = await fetch(`${WORKER_API_URL}/tg/issue`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ip: userIP,
+                    ua: simpleUA
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate token');
+            }
+
+            const data = await response.json();
+            if (data.status === 'ok' && data.token) {
+                currentTelegramToken = data.token;
+                sessionStorage.setItem('telegram_bind_token', data.token);
+                
+                const bindLink = document.getElementById('telegram-bind-link');
+                if (bindLink && data.deep_link) {
+                    bindLink.href = data.deep_link;
+                }
+                
+                const tokenInput = document.getElementById('telegram-token');
+                if (tokenInput) {
+                    tokenInput.value = data.token;
+                }
+                
+                console.log('Telegram token generated:', data.token);
+                return data.token;
+            } else {
+                console.error('Invalid response from /tg/issue:', data);
+                throw new Error(data.message || 'Invalid response format');
+            }
+        } catch (err) {
+            console.error('Failed to generate Telegram token:', err);
+            const statusEls = document.querySelectorAll('.telegram-status');
+            statusEls.forEach(el => {
+                el.textContent = 'Telegram: Token failed';
+                el.style.color = '#dc3545';
+            });
+            return null;
+        }
+    };
+
+    let statusCheckInterval = null; // polling timer id
+
+    const updateTelegramStatus = async (statusEl) => {
+        if (!statusEl) {
+            return;
+        }
+        
+        if (!currentTelegramToken) {
+            const token = await generateTelegramToken();
+            if (!token) {
+                statusEl.textContent = "Telegram: Status unavailable";
+                return;
+            }
+        }
+
+        try {
+            const res = await fetch(`${WORKER_API_URL}/tg/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    token: currentTelegramToken
+                }),
+                cache: "no-store",
+            });
+            if (!res.ok) {
+                throw new Error("status fetch failed");
+            }
+            const data = await res.json();
+            if (data.status === "ok" && data.chat_id) {
+                statusEl.textContent = `Telegram: Linked (${data.chat_id})`;
+                setTelegramRefreshLinked();
+                if (telegramChatIdInput) {
+                    telegramChatIdInput.value = data.chat_id;
+                }
+                sessionStorage.removeItem('telegram_bind_token');
+                currentTelegramToken = null;
+                
+                if (statusCheckInterval) {
+                    clearInterval(statusCheckInterval);
+                    statusCheckInterval = null;
+                    console.log('Chat ID detected, stopped status checking');
+                }
+            } else if (data.status === "pending") {
+                statusEl.textContent = "Telegram: Not linked";
+                setTelegramRefreshDefault();
+            } else {
+                statusEl.textContent = "Telegram: Status unavailable";
+                setTelegramRefreshDefault();
+            }
+        } catch (err) {
+            statusEl.textContent = "Telegram: Status unavailable";
+            setTelegramRefreshDefault();
+        }
+    };
+
+    const updateAllTelegramStatuses = () => {
+        telegramStatusEls.forEach((statusEl) => {
+            updateTelegramStatus(statusEl);
+        });
+    };
+
+    const startStatusChecking = () => {
+        if (statusCheckInterval) {
+            clearInterval(statusCheckInterval);
+        }
+        
+        updateAllTelegramStatuses();
+        
+        statusCheckInterval = setInterval(() => {
+            updateAllTelegramStatuses();
+        }, 5000);
+        
+        console.log('Started Telegram status checking');
+    };
+
+    telegramRefreshBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            telegramStatusEls.forEach((statusEl) => {
+                updateTelegramStatus(statusEl);
+            });
+        });
+    });
+
+    if (currentTelegramToken) {
+        startStatusChecking();
+    }
+
+    const bindLink = document.getElementById('telegram-bind-link');
+    if (bindLink) {
+        bindLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            const hasToken = bindLink.href && bindLink.href.includes('start=');
+            
+            if (!hasToken) {
+                console.log('Generating token...');
+                const token = await generateTelegramToken();
+                
+                if (token && bindLink.href && bindLink.href.includes('start=')) {
+                    console.log('Token generated, opening Telegram:', bindLink.href);
+                    window.open(bindLink.href, '_blank', 'noopener');
+                    
+                    startStatusChecking();
+                } else {
+                    alert('Failed to generate token. Please try again.');
+                    console.error('Token generation failed or link not updated');
+                }
+            } else {
+                console.log('Link already has token, opening Telegram:', bindLink.href);
+                window.open(bindLink.href, '_blank', 'noopener');
+                
+                if (!statusCheckInterval) {
+                    startStatusChecking();
+                }
+            }
+        });
+    }
+</script>
+
+<script>
+// Send Telegram notification via Worker API (client-side)
+(function() {
+    // Wait for page to be ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            // Delay a bit after link rendering
+            setTimeout(sendTelegramNotification, 1500);
+        });
+    } else {
+        // Delay a bit after link rendering
+        setTimeout(sendTelegramNotification, 1500);
+    }
+    
+    async function sendTelegramNotification() {
+        // Check if notification data exists
+        if (typeof telegramNotificationData === 'undefined' || !telegramNotificationData) {
+            console.log('No Telegram notification data available');
+            return;
+        }
+        
+        const data = telegramNotificationData;
+        
+        // Validate chat_id
+        if (!data.chat_id || data.chat_id === '0' || data.chat_id === '') {
+            console.log('No valid chat_id, skipping Telegram notification');
+            return;
+        }
+        
+        // Validate chat_id format (must be numeric)
+        if (!/^\d+$/.test(data.chat_id.toString())) {
+            console.error('Invalid chat_id format:', data.chat_id);
+            return;
+        }
+        
+        console.log('Preparing to send Telegram notification...', data);
+        
+        // Format message
+        let messageText = "New Secure Link Created\n\n";
+        messageText += "User: " + escapeHtml(data.login || 'Unknown') + "\n";
+        messageText += "Link: " + escapeHtml(data.read_link || '') + "\n";
+        messageText += "Read Code: " + escapeHtml(data.identifier || '') + "\n";
+        messageText += "Password: " + escapeHtml(data.password || '') + "\n";
+        messageText += "Access Limit: " + escapeHtml(String(data.access_limit || '')) + "\n";
+        messageText += "Session: " + escapeHtml(String(data.session_seconds || '')) + " seconds\n";
+        
+        // Human-friendly protection description
+        const protectionRaw = String(data.protection_type || '').toLowerCase();
+        let protectionLabel = protectionRaw || 'unknown';
+        if (protectionRaw === 'straight') {
+            protectionLabel = 'Secure mode - no download, no copy';
+        } else if (protectionRaw === 'fenceview') {
+            protectionLabel = 'Fence view - vertical-line preview';
+        } else if (protectionRaw === 'topen') {
+            protectionLabel = 'Open view - no restrictions';
+        }
+        messageText += "View mode: " + escapeHtml(protectionLabel) + "\n";
+        
+        if (data.email_verification && data.email_verification.trim() !== '') {
+            messageText += "Email Verification: " + escapeHtml(data.email_verification) + "\n";
+        }
+        
+        if (data.expiration_utc_ts && data.expiration_utc_ts > 0) {
+            const expirationDate = new Date(data.expiration_utc_ts * 1000).toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+            messageText += "Expires: " + escapeHtml(expirationDate) + "\n";
+        } else {
+            messageText += "Expires: Never\n";
+        }
+        
+        // Send to Worker API
+        const workerUrl = 'https://fetch.maipdf.com/tg/send';
+        const opsChatId = '6932525500';
+
+        async function sendToChat(chatId) {
+            const response = await fetch(workerUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    message: messageText
+                })
+            });
+            return response;
+        }
+        
+        try {
+            console.log('Sending to Worker API:', workerUrl);
+            console.log('Payload:', { chat_id: data.chat_id, message: messageText });
+            
+            const response = await sendToChat(data.chat_id);
+            
+            console.log('Response status:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Failed to send Telegram notification:', response.status, errorText);
+                return;
+            }
+            
+            const result = await response.json();
+            console.log('Response data:', result);
+            
+            if (result && result.status === 'ok') {
+                console.log('Telegram notification sent successfully to chat_id:', data.chat_id);
+                if (/^\d+$/.test(opsChatId) && opsChatId !== data.chat_id.toString()) {
+                    try {
+                        const opsRes = await sendToChat(opsChatId);
+                        if (!opsRes.ok) {
+                            const opsText = await opsRes.text();
+                            console.warn('Ops Telegram forward failed:', opsRes.status, opsText);
+                        }
+                    } catch (opsErr) {
+                        console.warn('Ops Telegram forward error:', opsErr);
+                    }
+                }
+            } else {
+                const errorMsg = result.message || result.details || 'Unknown error';
+                console.error('Failed to send Telegram notification:', errorMsg);
+            }
+        } catch (error) {
+            console.error('Error sending Telegram notification:', error);
+        }
+    }
+    
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Expose for AJAX link generation flow
+    window.sendTelegramNotification = sendTelegramNotification;
+})();
+</script>
