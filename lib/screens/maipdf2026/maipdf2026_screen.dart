@@ -435,58 +435,119 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('MaiPDF Cloud Sharing'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+      backgroundColor: const Color(0xFFF6F2FF),
+      body: BackgroundDecoration(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 430),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  _buildMobileHeader(),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                      children: [
+                        _buildStepProgress(),
+                        const SizedBox(height: 14),
+                        if (_currentStep >= 1) _buildSection1(),
+                        if (_currentStep >= 2) _buildSection2(),
+                        if (_currentStep >= 3) _buildSection3(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
-      body: BackgroundDecoration(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          children: [
-            _buildStepProgress(),
-            const SizedBox(height: 24),
-            if (_currentStep >= 1) _buildSection1(),
-            if (_currentStep >= 2) _buildSection2(),
-            if (_currentStep >= 3) _buildSection3(),
-          ],
-        ),
+    );
+  }
+
+  Widget _buildMobileHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(8, 8, 16, 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.96),
+        border: const Border(bottom: BorderSide(color: Color(0xFFE7DEF8))),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          const SizedBox(width: 2),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'MaiPDF',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF23172F),
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Cloud Sharing',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF7A6D8D),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1EAFF),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'PDF',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF6D3FE8),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildStepProgress() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.98),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFFE5DFF0)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+            color: const Color(0xFF4C1D95).withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _stepChip(1, 'Upload', _currentStep >= 1, _currentStep > 1),
-            const SizedBox(width: 12),
-            _stepChip(2, 'Configure', _currentStep >= 2, _currentStep > 2),
-            const SizedBox(width: 12),
-            _stepChip(3, 'Share', _currentStep >= 3, false),
-          ],
-        ),
+      child: Row(
+        children: [
+          Expanded(child: _stepChip(1, 'Upload', _currentStep >= 1, _currentStep > 1)),
+          const SizedBox(width: 8),
+          Expanded(child: _stepChip(2, 'Set', _currentStep >= 2, _currentStep > 2)),
+          const SizedBox(width: 8),
+          Expanded(child: _stepChip(3, 'Share', _currentStep >= 3, false)),
+        ],
       ),
     );
   }
@@ -494,48 +555,52 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
   Widget _stepChip(int step, String label, bool active, bool completed) {
     final isActive = active && !completed;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      height: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         gradient: isActive
             ? const LinearGradient(
-                colors: [Color(0xFF5B21B6), Color(0xFF8B5CF6)],
+                colors: [Color(0xFF5B21B6), Color(0xFF7C3AED)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : null,
-        color: completed ? const Color(0xFF10B981) : (isActive ? null : const Color(0xFFF5F3FF)),
-        borderRadius: BorderRadius.circular(50),
+        color: completed ? const Color(0xFF10B981) : (isActive ? null : const Color(0xFFF7F3FF)),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isActive || completed ? const Color(0xFF8B5CF6) : const Color(0xFFDDD6FE),
+          color: completed ? const Color(0xFF10B981) : (isActive ? const Color(0xFF7C3AED) : const Color(0xFFE0D7F4)),
         ),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 28,
-            height: 28,
+            width: 24,
+            height: 24,
             decoration: BoxDecoration(
-              color: completed ? const Color(0xFF10B981) : (isActive ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFE5DFF0)),
+              color: completed ? Colors.white.withValues(alpha: 0.22) : (isActive ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFE7DEF8)),
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
             child: Text(
               '$step',
               style: TextStyle(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w800,
                 color: completed ? Colors.white : (isActive ? Colors.white : const Color(0xFF718096)),
-                fontSize: 14,
+                fontSize: 13,
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: isActive || completed ? FontWeight.w600 : FontWeight.w500,
-              color: completed || isActive ? Colors.white : const Color(0xFF718096),
-              fontSize: 13,
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: isActive || completed ? FontWeight.w700 : FontWeight.w600,
+                color: completed || isActive ? Colors.white : const Color(0xFF7A6D8D),
+                fontSize: 13,
+              ),
             ),
           ),
         ],
@@ -554,7 +619,7 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
             _uploadStatus,
             style: TextStyle(
               color: isError ? Colors.red.shade700 : const Color(0xFF718096),
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: isError ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -566,18 +631,11 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
           GestureDetector(
             onTap: _uploading ? null : _pickAndUpload,
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 18),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFFFAF5FF),
-                    const Color(0xFFF5F3FF),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF8B5CF6), width: 2),
+                color: const Color(0xFFFAF7FF),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF8B5CF6), width: 1.4),
               ),
               child: _uploading
                   ? const Column(
@@ -593,11 +651,11 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                     )
                   : Column(
                       children: [
-                        Icon(Icons.cloud_upload_outlined, size: 48, color: Theme.of(context).colorScheme.primary),
-                        const SizedBox(height: 12),
+                        Icon(Icons.cloud_upload_outlined, size: 40, color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(height: 10),
                         const Text('Choose File', style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
-                        Text('Or tap to pick PDF / image', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                        Text('Tap to pick a PDF', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                       ],
                     ),
             ),
@@ -616,14 +674,16 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
           TextField(
             controller: _fileNameDisplayController,
             readOnly: true,
-            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 13),
             decoration: const InputDecoration(
               labelText: 'File',
               border: OutlineInputBorder(),
               filled: true,
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           TextField(
             controller: _limitController,
             keyboardType: TextInputType.number,
@@ -631,6 +691,8 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               labelText: 'Access Limit (Number of Opens)',
               hintText: 'Number of Opens',
               border: OutlineInputBorder(),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
           ),
           const SizedBox(height: 12),
@@ -641,6 +703,8 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               labelText: 'Each Session (seconds)',
               hintText: 'in (seconds)',
               border: OutlineInputBorder(),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
           ),
           const SizedBox(height: 16),
@@ -662,6 +726,8 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
             decoration: const InputDecoration(
               labelText: 'View Type',
               border: OutlineInputBorder(),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
             items: const [
               DropdownMenuItem(value: 'straight', child: Text('SecureView')),
@@ -676,6 +742,8 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
             decoration: const InputDecoration(
               labelText: 'Expiration',
               border: OutlineInputBorder(),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
             items: const [
               DropdownMenuItem(value: '', child: Text('Select duration')),
@@ -696,6 +764,8 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               decoration: const InputDecoration(
                 hintText: 'Custom days',
                 border: OutlineInputBorder(),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               ),
             ),
           ],
@@ -730,6 +800,8 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                 labelText: 'Chat ID',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.chat_bubble_outline),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               ),
             ),
             const SizedBox(height: 8),
@@ -777,10 +849,12 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               decoration: const InputDecoration(
                 hintText: 'Enter up to 50 email addresses, separated by commas',
                 border: OutlineInputBorder(),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               ),
             ),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
           if (_submitError != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -797,7 +871,8 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                 : const Icon(Icons.link),
             label: Text(_submitting ? 'Generating...' : 'Create Secure Link'),
             style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               backgroundColor: const Color(0xFF8B5CF6),
             ),
           ),
@@ -824,6 +899,7 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     isDense: true,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                 ),
               ),
@@ -901,7 +977,7 @@ class BackgroundDecoration extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFFF5F3FF), Color(0xFFEDE9FE)],
+          colors: [Color(0xFFFCFAFF), Color(0xFFF1ECFF)],
         ),
       ),
       child: child,
@@ -918,16 +994,16 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF4C1D95).withValues(alpha: 0.07),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
           ),
         ],
         border: Border.all(color: const Color(0xFFE5DFF0)),
@@ -938,12 +1014,12 @@ class _SectionCard extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Color(0xFF5B21B6),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           child,
         ],
       ),

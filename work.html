@@ -97,6 +97,9 @@
         <button class="nav-link" id="tab-notes" data-bs-toggle="tab" data-bs-target="#pane-notes" type="button" role="tab"><i class="fas fa-sticky-note me-1"></i>笔记</button>
       </li>
       <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-teaching" data-bs-toggle="tab" data-bs-target="#pane-teaching" type="button" role="tab"><i class="fas fa-graduation-cap me-1"></i>教学</button>
+      </li>
+      <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-dart-doc" data-bs-toggle="tab" data-bs-target="#pane-dart-doc" type="button" role="tab"><i class="fas fa-code me-1"></i>maipdf2026_screen 代码说明</button>
       </li>
     </ul>
@@ -170,6 +173,363 @@
             <p>全部在服务端处理，App 不直连 R2，不配置域名。</p>
           </div>
         </div>
+
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-sitemap me-2"></i>当前 App 结构图（Dart 文件关系）</div>
+          <div class="card-body">
+            <p class="meta-bar">更新日期：2026-05-20 · 说明：下面是当前 Flutter App 真正在用的页面、工具类、平台桥接和后端关系。</p>
+
+            <h3>1. 总体调用关系</h3>
+            <pre class="bg-dark text-light p-3 rounded small"><code>lib/main.dart
+└─ MyApp
+   └─ MaterialApp(home: MaipdfHomePage)
+      └─ lib/screens/maipdf_home_page.dart
+         ├─ Cloud Tab
+         │  └─ START → Maipdf2026Screen
+         │     └─ lib/screens/maipdf2026/maipdf2026_screen.dart
+         │        ├─ pick PDF → https://maipdf.com/pdf/r2upload.php
+         │        ├─ submit form → https://maipdf.com/pdf/maipdf2026_backend.php
+         │        └─ result → link + read code + modify code + QR
+         │
+         └─ DRM Tab
+            ├─ DRM Secure Share → DrmSecureSharePage
+            │  └─ lib/screens/drm_secure_share_page.dart
+            │     ├─ choose PDF
+            │     ├─ local AES-GCM encrypt + key split + locked HTML
+            │     ├─ POST https://drm.maipdf.com/api/app/licenses/create
+            │     ├─ build package locally, wrap with MAIPDF1, save as .maipdf
+            │     └─ show license_id + mod_code
+            │
+            └─ Protected Viewer → DrmProtectedViewerPage
+               └─ lib/screens/drm_protected_viewer_page.dart
+                  ├─ choose .maipdf / older ZIP / locked HTML
+                  ├─ extract locked HTML from package
+                  ├─ enable SecureScreen
+                  └─ render HTML via lib/widgets/html_viewer.dart</code></pre>
+
+            <h3>2. 本地 Pack 流程图：Dart 和 TS/JS 怎么交流</h3>
+            <pre class="bg-dark text-light p-3 rounded small"><code>发送方 App 生成 .maipdf
+
+lib/screens/drm_secure_share_page.dart
+└─ 用户选择 PDF、设置 max_opens / expires_in_seconds
+   └─ 调用 lib/utils/local_drm_packager.dart
+      ├─ Dart 本地生成 full_key / html_half / server_half
+      ├─ Dart 本地计算 SHA-256(content)
+      ├─ Dart → HTTPS POST
+      │     https://drm.maipdf.com/api/app/licenses/create
+      │     └─ AustraliaGuide/functions/api/app/licenses/create.ts
+      │        ├─ 只写 D1 licenses 表
+      │        ├─ 保存 server_half、次数、过期时间、文件名
+      │        └─ 返回 license_id / mod_code / api_base / created_at
+      ├─ Dart 用 license_id 做 AES-GCM AAD，本地加密 PDF
+      ├─ Dart 本地生成 locked HTML（里面含 JS reader + encrypted PDF）
+      ├─ Dart 本地生成 ZIP-compatible package
+      └─ Dart 加 MAIPDF1 文件头，保存为 .maipdf
+
+读者 App 打开 .maipdf
+
+lib/screens/drm_protected_viewer_page.dart
+└─ 选择 .maipdf
+   ├─ Dart 去掉 MAIPDF1 文件头
+   ├─ Dart 解出 package 里的 locked HTML
+   └─ lib/widgets/html_viewer_io.dart
+      └─ WebView 加载 locked HTML
+         └─ locked HTML 里面的 JavaScript → HTTPS POST
+              https://drm.maipdf.com/api/unlock
+              └─ AustraliaGuide/functions/api/unlock.ts
+                 ├─ 检查 license 状态 / 次数 / 过期
+                 ├─ 扣一次 opens_used
+                 └─ 返回 server_half 候选 parts
+
+locked HTML 内部 JavaScript
+└─ 用 html_half + server_half 还原 full_key
+└─ Web Crypto AES-GCM 解密 PDF
+└─ PDF.js 渲染 PDF 页面</code></pre>
+
+            <h3>3. Dart 页面文件：谁在用谁</h3>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>文件</th><th>状态</th><th>由谁打开/引用</th><th>连接到哪里</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><code>lib/main.dart</code></td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>Flutter 启动入口</td>
+                  <td><code>MaipdfHomePage</code></td>
+                </tr>
+                <tr>
+                  <td><code>lib/screens/maipdf_home_page.dart</code></td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td><code>main.dart</code></td>
+                  <td>首页；包含 <code>Cloud</code> / <code>DRM</code> 两个 Tab，负责导航到三个主要页面。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/screens/maipdf2026/maipdf2026_screen.dart</code></td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>首页 Cloud Tab → <code>START</code></td>
+                  <td>Cloud Sharing 原生页面；连接 <code>r2upload.php</code>、<code>maipdf2026_backend.php</code>、Telegram Worker、QR 生成。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/screens/drm_secure_share_page.dart</code></td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>首页 DRM Tab → <code>DRM Secure Share</code></td>
+                  <td>DRM 打包页面；本地加密和封包，只连接 <code>https://drm.maipdf.com/api/app/licenses/create</code> 写入 license / server_half，再调用 <code>download_helper</code> 保存为 <code>.maipdf</code>。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/screens/drm_protected_viewer_page.dart</code></td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>首页 DRM Tab → <code>Protected Viewer</code></td>
+                  <td>DRM 阅读框；选择 <code>.maipdf</code>/HTML，解析 HTML，调用 <code>SecureScreen</code>，通过 <code>HtmlViewer</code> 展示。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/screens/cloud_share_page.dart</code></td>
+                  <td><span class="badge bg-secondary">暂时未接入口</span></td>
+                  <td>当前首页没有导航到它</td>
+                  <td>旧的 WebView 方式加载 <code>maipdf2026.html</code>；现在已被原生 <code>Maipdf2026Screen</code> 替代。</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>4. 工具类和平台文件</h3>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>文件</th><th>被谁使用</th><th>作用</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><code>lib/utils/local_drm_packager.dart</code></td>
+                  <td><code>drm_secure_share_page.dart</code></td>
+                  <td>App 本地 pack 核心：生成 key、拆 key、计算 SHA-256、调用 <code>/api/app/licenses/create</code>、AES-GCM 加密 PDF、生成 locked HTML、封 ZIP-compatible package。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/utils/download_helper.dart</code></td>
+                  <td><code>drm_secure_share_page.dart</code></td>
+                  <td>条件导出：Web 用 <code>download_helper_web.dart</code>，原生/桌面用 <code>download_helper_io.dart</code>。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/utils/download_helper_web.dart</code></td>
+                  <td>Flutter Web 测试</td>
+                  <td>用浏览器 Blob + anchor 触发 <code>.maipdf</code> 下载。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/utils/download_helper_io.dart</code></td>
+                  <td>Android / iOS / Windows / macOS / Linux</td>
+                  <td>手机用平台保存；桌面先选路径再写入 bytes。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/utils/secure_screen.dart</code></td>
+                  <td><code>drm_protected_viewer_page.dart</code></td>
+                  <td>通过 MethodChannel <code>maipdf/secure_screen</code> 开关安全屏幕。</td>
+                </tr>
+                <tr>
+                  <td><code>android/app/src/main/kotlin/.../MainActivity.kt</code></td>
+                  <td><code>secure_screen.dart</code></td>
+                  <td>Android 原生接收 MethodChannel，开启/关闭 <code>FLAG_SECURE</code> 防截图/录屏。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/widgets/html_viewer.dart</code></td>
+                  <td><code>drm_protected_viewer_page.dart</code></td>
+                  <td>条件导出：Web 测试用 iframe，原生 App 用 WebView。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/widgets/html_viewer_web.dart</code></td>
+                  <td>Flutter Web / Chrome 测试</td>
+                  <td>用 <code>HtmlElementView</code> + <code>iframe.srcdoc</code> 展示 locked HTML。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/widgets/html_viewer_io.dart</code></td>
+                  <td>Android / iOS / 桌面原生</td>
+                  <td>用 <code>webview_flutter</code> 加载 locked HTML，并启用 JavaScript。</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>5. 后端接口关系</h3>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>功能</th><th>页面</th><th>接口/地址</th><th>结果</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>Cloud 上传</td>
+                  <td><code>Maipdf2026Screen</code></td>
+                  <td><code>POST https://maipdf.com/pdf/r2upload.php</code></td>
+                  <td>返回 <code>path</code> / <code>file_id</code>。</td>
+                </tr>
+                <tr>
+                  <td>Cloud 生成链接</td>
+                  <td><code>Maipdf2026Screen</code></td>
+                  <td><code>POST https://maipdf.com/pdf/maipdf2026_backend.php</code></td>
+                  <td>返回 HTML，App 解析出链接、Read Code、Modify Code。</td>
+                </tr>
+                <tr>
+                  <td>DRM 打包</td>
+                  <td><code>DrmSecureSharePage</code></td>
+                  <td><code>POST https://drm.maipdf.com/api/app/licenses/create</code></td>
+                  <td>App 只发送文件元数据、<code>content_sha256</code>、<code>server_half</code>、次数和过期；后端返回 <code>license_id</code> / <code>mod_code</code>。</td>
+                </tr>
+                <tr>
+                  <td>DRM 阅读解锁</td>
+                  <td><code>DrmProtectedViewerPage</code> 内 locked HTML</td>
+                  <td><code>POST https://drm.maipdf.com/api/unlock</code></td>
+                  <td>由 locked HTML 内部 JS 调用，用于扣次数、校验过期、获取解密 key half。</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>6. AustraliaGuide 里的 TS/JS 文件关系</h3>
+            <table class="table table-bordered table-sm small mb-0">
+              <thead><tr><th>后端/模板文件</th><th>谁调用它</th><th>当前状态</th><th>作用</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><code>functions/api/app/licenses/create.ts</code></td>
+                  <td><code>local_drm_packager.dart</code> 通过 HTTPS POST 调用</td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>App 本地 pack 专用。只写 D1 数据库：<code>license_id</code>、<code>mod_code</code>、<code>server_half</code>、次数、过期、文件元数据。</td>
+                </tr>
+                <tr>
+                  <td><code>functions/api/unlock.ts</code></td>
+                  <td><code>.maipdf</code> 内 locked HTML 的 JavaScript 调用</td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>阅读时校验授权、扣次数，并返回混入 decoy 的 <code>server_half</code> 候选 parts。</td>
+                </tr>
+                <tr>
+                  <td><code>functions/api/pack.ts</code></td>
+                  <td>网页端 <code>drm.maipdf.com</code></td>
+                  <td><span class="badge bg-secondary">网页端保留</span></td>
+                  <td>现有网页端 pack，不影响 App 本地 pack。</td>
+                </tr>
+                <tr>
+                  <td><code>functions/api/app/pack.ts</code></td>
+                  <td>目前 Flutter App 不再调用</td>
+                  <td><span class="badge bg-warning text-dark">备用</span></td>
+                  <td>之前新增的 App 专用后端 pack 版本；现在主线改为本地 pack，可保留作兼容/回退。</td>
+                </tr>
+                <tr>
+                  <td><code>functions/lib/appViewerTemplate.ts</code></td>
+                  <td><code>functions/api/app/pack.ts</code></td>
+                  <td><span class="badge bg-warning text-dark">备用</span></td>
+                  <td>后端 pack 备用模板，复用网页 viewer 但移除 Adsense。当前本地 pack 使用 Dart 内置轻量 HTML 模板。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-file-shield me-2"></i>2026-05-20 升级记录：DRM 输出 .maipdf</div>
+          <div class="card-body">
+            <p class="meta-bar">日期：2026-05-20 · 目标：让用户拿到的是 MaiPDF 专用文件，而不是普通 ZIP 文件。</p>
+            <ul class="small mb-0">
+              <li><code>DrmSecureSharePage</code> 现在在 App 本地完成 AES-GCM 加密、key split、locked HTML 生成、ZIP-compatible package 生成，再加 <code>MAIPDF1</code> 文件头保存为 <code>.maipdf</code>。</li>
+              <li>App 不再上传 PDF 给后端 pack；只调用 <code>https://drm.maipdf.com/api/app/licenses/create</code> 写入 license 和 <code>server_half</code>，不影响网页端现有 <code>/api/pack</code>。</li>
+              <li><code>Protected Viewer</code> 的文件选择支持 <code>.maipdf</code>，并优先引导用户打开这种专用文件。</li>
+              <li>为了兼容之前测试生成的文件，Viewer 暂时仍支持旧 <code>.zip</code> 和解压后的 locked <code>.html</code>。</li>
+              <li>当前第一版本地 pack 使用 App 内置轻量 viewer HTML；Viewer 会先识别 <code>MAIPDF1</code>，再读取里面的 locked HTML。以后可以把 PDF.js 内联进 App 模板，减少外部 CDN 依赖。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-calendar-day me-2"></i>2026-05-19 工作记录：Flutter App / DRM Viewer</div>
+          <div class="card-body">
+            <p class="meta-bar">日期：2026-05-19 · 目标：把 MaiPDF 从“网页工具”推进到“手机 App + DRM 阅读器”方向。</p>
+
+            <h3>1. 项目理解与运行方式</h3>
+            <ul class="small">
+              <li>确认当前仓库是 Flutter 多平台 App，核心入口为 <code>lib/main.dart</code>，首页为 <code>lib/screens/maipdf_home_page.dart</code>。</li>
+              <li>确认原 Cloud Sharing 流程集中在 <code>lib/screens/maipdf2026/maipdf2026_screen.dart</code>。</li>
+              <li>确认 Flutter/Dart 工具在当前电脑环境中多次超时，<code>flutter analyze</code>、<code>flutter test</code>、<code>dart format</code> 未能完成；后续需要单独处理工具链卡住问题。</li>
+              <li>给出运行方式：<code>flutter run -d chrome</code>，热重启使用终端内 <kbd>R</kbd>。</li>
+            </ul>
+
+            <h3>2. Cloud Sharing 页面手机化</h3>
+            <ul class="small">
+              <li>把 <code>maipdf2026_screen.dart</code> 从桌面网页表单感改成手机端 App 体验：最大宽度约 430px、居中显示、紧凑步骤条、移动端 Header、卡片半径收敛为 8px。</li>
+              <li>把上传区、表单输入框、Dropdown、按钮高度和间距改得更适合手机操作。</li>
+              <li>修正文案：选择文件处从 <code>PDF / image</code> 调整为更准确的 PDF 选择提示。</li>
+              <li>首页也同步改为手机宽度，避免首页像网页、进入页面后才像 App。</li>
+            </ul>
+
+            <h3>3. 首页增加 Cloud / DRM Tab</h3>
+            <ul class="small">
+              <li>在 <code>maipdf_home_page.dart</code> 增加 <code>DefaultTabController</code>，首页新增两个 Tab：<strong>Cloud</strong> 和 <strong>DRM</strong>。</li>
+              <li><strong>Cloud</strong>：保留原 Online MaiPDF Cloud Sharing 入口。</li>
+              <li><strong>DRM</strong>：新增 DRM Secure Share 和 Protected Viewer 两个入口。</li>
+            </ul>
+
+            <h3>4. DRM Secure Share：生成受保护 ZIP</h3>
+            <ul class="small">
+              <li>新增 <code>lib/screens/drm_secure_share_page.dart</code>。</li>
+              <li>页面支持打开网页端 <code>https://drm.maipdf.com/</code>，也支持在 App 本地加密封包，并调用 <code>https://drm.maipdf.com/api/app/licenses/create</code> 写授权记录。</li>
+              <li>App 本地 pack 字段：PDF bytes、<code>max_opens</code>、<code>expires_in_seconds</code>、<code>filename</code>；发给后端的是元数据和 <code>server_half</code>，不是 PDF 原文。</li>
+              <li>成功后读取 JSON 里的 <code>license_id</code> 和 <code>mod_code</code>，在 App 内显示并支持复制。</li>
+              <li>App 本地生成的 <code>.maipdf</code> 内部是带 <code>MAIPDF1</code> 文件头的 ZIP-compatible package，包里只有一个 locked HTML。</li>
+            </ul>
+
+            <h3>5. .maipdf 保存/下载逻辑</h3>
+            <ul class="small">
+              <li>新增 <code>lib/utils/download_helper.dart</code> 条件导出。</li>
+              <li>Web 测试环境使用 <code>dart:html</code> Blob + anchor 触发浏览器下载，文件进入 Chrome 下载目录。</li>
+              <li>Android/iOS 使用 <code>file_picker</code> 的 <code>saveFile(bytes: ...)</code> 走平台保存流程。</li>
+              <li>Windows/macOS/Linux 桌面端使用保存对话框拿路径后，App 自己写入 <code>.maipdf</code> bytes，避免只返回路径但没真正写文件。</li>
+            </ul>
+
+            <h3>6. Protected Viewer：选择 .maipdf / HTML 阅读</h3>
+            <ul class="small">
+              <li>新增 <code>lib/screens/drm_protected_viewer_page.dart</code>。</li>
+              <li>用户可选择 <code>.maipdf</code>、旧 DRM ZIP 或解压后的 locked HTML。</li>
+              <li>Package 解析器支持 App 本地生成和旧 DRM 后端生成的 STORED 单 HTML package：读取 Local File Header，找到 <code>.html</code> entry 后加载。</li>
+              <li>如果用户用普通压缩工具重新压缩过 package（method 非 0），当前提示用户先解压再选择 HTML。</li>
+              <li>进入 Viewer 页面时调用 <code>SecureScreen.setEnabled(true)</code>，离开时关闭。</li>
+            </ul>
+
+            <h3>7. Viewer 跨平台展示修正</h3>
+            <ul class="small">
+              <li>最初使用 <code>webview_flutter</code> 直接在 Flutter Web 测试中加载 HTML，出现 <code>setJavaScriptMode is not implemented on the current platform</code>。</li>
+              <li>为解决 Web/Chrome 测试问题，新增 <code>lib/widgets/html_viewer.dart</code> 条件导出。</li>
+              <li>移动端/桌面原生走 <code>html_viewer_io.dart</code>：使用 <code>webview_flutter</code>，启用 JavaScript。</li>
+              <li>Web 测试走 <code>html_viewer_web.dart</code>：使用 <code>HtmlElementView</code> + <code>iframe.srcdoc</code> 展示 locked HTML。</li>
+            </ul>
+
+            <h3>8. 防截图/录屏基础能力</h3>
+            <ul class="small">
+              <li>新增 <code>lib/utils/secure_screen.dart</code>，通过 MethodChannel <code>maipdf/secure_screen</code> 控制安全屏幕。</li>
+              <li>修改 <code>android/app/src/main/kotlin/com/example/flutter_application_1/MainActivity.kt</code>，接入 Android <code>WindowManager.LayoutParams.FLAG_SECURE</code>。</li>
+              <li>Android 真机上该能力可阻止系统截图、最近任务预览和多数录屏。</li>
+              <li>记录限制：iOS 没有普通公开 API 能完全禁止截图，只能检测截图/录屏并遮挡内容或记录风险；任何平台也无法阻止用户用另一台设备拍屏。</li>
+            </ul>
+
+            <h3>9. 文档与集成记录</h3>
+            <ul class="small">
+              <li><code>DRM_APP_INTEGRATION.md</code> 的核心内容已合并进 <code>work.html</code>，记录 DRM App 与 <code>drm.maipdf.com</code> 的接口契约。</li>
+              <li>文档中区分 Cloud Sharing（生成在线链接）与 DRM Secure Share（App 本地生成加密 <code>.maipdf</code>）。</li>
+              <li>记录未来目标：App 不只是 pack 工具，而是受保护 PDF 阅读器，用户可以导入 <code>.maipdf</code>/HTML 并在 App 内阅读。</li>
+            </ul>
+
+            <h3>10. 当前新增/修改文件</h3>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>路径</th><th>用途</th></tr></thead>
+              <tbody>
+                <tr><td><code>lib/screens/maipdf_home_page.dart</code></td><td>首页手机化，增加 Cloud / DRM Tab，接入 DRM Pack 和 Viewer 入口。</td></tr>
+                <tr><td><code>lib/screens/maipdf2026/maipdf2026_screen.dart</code></td><td>Cloud Sharing 页面手机端 UI 调整。</td></tr>
+                <tr><td><code>lib/screens/drm_secure_share_page.dart</code></td><td>DRM Pack 页面：选择 PDF、本地加密封包、调用 <code>/api/app/licenses/create</code>、保存 <code>.maipdf</code>、显示两个码。</td></tr>
+                <tr><td><code>lib/screens/drm_protected_viewer_page.dart</code></td><td>DRM Viewer 页面：选择 ZIP/HTML，解析并展示 locked HTML。</td></tr>
+                <tr><td><code>lib/utils/local_drm_packager.dart</code></td><td>本地 pack 核心：AES-GCM 加密、key split、locked HTML、ZIP-compatible package。</td></tr>
+                <tr><td><code>lib/widgets/html_viewer*.dart</code></td><td>跨平台 HTML 展示：Web 用 iframe，原生用 WebView。</td></tr>
+                <tr><td><code>lib/utils/download_helper*.dart</code></td><td>跨平台保存/下载 <code>.maipdf</code>。</td></tr>
+                <tr><td><code>lib/utils/secure_screen.dart</code></td><td>Flutter 端防截图 MethodChannel helper。</td></tr>
+                <tr><td><code>android/.../MainActivity.kt</code></td><td>Android 端接入 <code>FLAG_SECURE</code>。</td></tr>
+                <tr><td><code>AustraliaGuide/functions/api/app/licenses/create.ts</code></td><td>App 本地 pack 的后端配套接口：只写 license / server_half，不接收 PDF。</td></tr>
+                <tr><td><code>AustraliaGuide/functions/api/app/pack.ts</code></td><td>备用 App 后端 pack 接口；当前 Flutter 主线不调用。</td></tr>
+                <tr><td><code>work.html</code></td><td>统一记录 DRM App 接口、行为、阅读器目标、教学和 Markdown 文档汇总。</td></tr>
+              </tbody>
+            </table>
+
+            <h3>11. 待验证/后续</h3>
+            <ul class="small mb-0">
+              <li>热重启后测试：DRM Tab → DRM Secure Share → 选择 PDF → 本地生成 <code>.maipdf</code>；再到 Protected Viewer 打开该文件。</li>
+              <li>在 Android 真机测试 WebView 加载 locked HTML，并验证截图是否被系统阻止。</li>
+              <li>完善 iOS 策略：检测截图/录屏/AirPlay，并在捕获活跃时遮挡阅读内容。</li>
+              <li>后续可考虑把 locked HTML 的阅读逻辑从 WebView 逐步迁移为更可控的原生 PDF viewer，但短期 WebView 是最快可用路线。</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <!-- 待办 -->
@@ -189,10 +549,302 @@
       <!-- 笔记 -->
       <div class="tab-pane fade" id="pane-notes" role="tabpanel">
         <div class="card card-work">
+          <div class="card-header"><i class="fas fa-file-alt me-2"></i>根目录 Markdown 文档汇总（已合并到 work.html）</div>
+          <div class="card-body">
+            <p class="meta-bar">日期：2026-05-20 · 说明：以后优先看本页面。根目录里的 <code>.md</code> 文件可以作为开发备份，但主要信息已整理到这里。</p>
+
+            <h3>为什么之前会有 .md 文件</h3>
+            <p>我之前写 <code>.md</code> 是为了保存“接口契约”和“开发说明”，方便代码项目里快速搜索。但你现在主要通过 <code>work.html</code> 学习和管理项目，所以后续我会优先把说明写进 <code>work.html</code>，避免信息分散。</p>
+
+            <h3>1. README.md</h3>
+            <p>这是 Flutter 创建项目时自动生成的默认说明，主要内容是 Flutter 入门链接。对当前 MaiPDF App 帮助不大，可以忽略。</p>
+
+            <h3>2. PROJECT_STRUCTURE.md：Flutter 项目结构</h3>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>路径</th><th>是否常改</th><th>作用</th></tr></thead>
+              <tbody>
+                <tr><td><code>lib/</code></td><td><span class="badge bg-success">经常</span></td><td>App 业务代码。页面、工具类、Dart 逻辑都在这里。</td></tr>
+                <tr><td><code>pubspec.yaml</code></td><td><span class="badge bg-success">偶尔</span></td><td>依赖包、assets、项目配置。新增 <code>cryptography</code> 就是在这里。</td></tr>
+                <tr><td><code>android/</code></td><td><span class="badge bg-warning text-dark">偶尔</span></td><td>Android 外壳。防截图 <code>FLAG_SECURE</code> 就改了 Android 原生文件。</td></tr>
+                <tr><td><code>ios/ web/ windows/ macos/ linux/</code></td><td><span class="badge bg-secondary">较少</span></td><td>其它平台外壳，通常不用动。</td></tr>
+                <tr><td><code>build/</code>、<code>.dart_tool/</code></td><td><span class="badge bg-secondary">不用手改</span></td><td>构建缓存和生成文件。</td></tr>
+              </tbody>
+            </table>
+
+            <h3>3. LINK_AND_FILES.md：App 内链接和文件</h3>
+            <ul class="small">
+              <li>早期版本只有首页 <strong>Online MaiPDF Cloud Sharing</strong> 入口，用 WebView 打开线上 <code>https://maipdf.com/pdf/maipdf2026.html</code>。</li>
+              <li>现在首页已经升级成 <strong>Cloud / DRM</strong> 两个 Tab，Cloud 使用原生 Flutter 页面 <code>Maipdf2026Screen</code>，DRM 使用 App 本地 pack 和 Protected Viewer。</li>
+              <li><code>maipdf_htmls/</code> 这类网页源码目录只是参考，不是 Flutter 路由；Flutter 真正运行的主要是 <code>lib/</code>。</li>
+              <li>如果以后要把某个 HTML 页面打包进 App，需要放到 <code>assets/html/</code> 并在 <code>pubspec.yaml</code> 声明。</li>
+            </ul>
+
+            <h3>4. BACKEND_APP_INTEGRATION.md：Cloud Sharing 与 PHP 后端</h3>
+            <p>这个文档说明的是 Cloud Sharing，不是 DRM 本地 pack。当前 Cloud 流程是：</p>
+            <pre class="bg-dark text-light p-3 rounded small"><code>App 选 PDF
+→ POST https://maipdf.com/pdf/r2upload.php
+→ 返回 path / file_id
+→ POST https://maipdf.com/pdf/maipdf2026_backend.php
+→ App 从返回 HTML 解析 link / Read Code / Modify Code
+→ App 展示链接和二维码</code></pre>
+            <ul class="small">
+              <li><code>r2upload.php</code> 接收字段 <code>file</code>，返回 JSON。</li>
+              <li><code>maipdf2026_backend.php</code> 接收 <code>sender</code>、<code>limit</code>、<code>password</code>、<code>darkmode</code>、<code>zhangai</code>、<code>expiration_ts</code> 等表单字段。</li>
+              <li>App 请求会带 <code>X-Requested-With: FlutterApp</code>，PHP 端需要对 App 请求跳过网页 Cookie <code>uploadedfile</code> 检查。</li>
+              <li>未来可以让 PHP 对 App 返回 JSON，这样 App 不用再解析 HTML。</li>
+            </ul>
+
+            <h3>5. DRM_APP_INTEGRATION.md：DRM App 本地 Pack</h3>
+            <p>这个文档的核心内容已经合并到 <strong>App / 后端</strong> 标签页。当前 DRM 主流程是：</p>
+            <pre class="bg-dark text-light p-3 rounded small"><code>App 本地 AES-GCM 加密 PDF
+→ App 拆 key：html_half + server_half
+→ App POST https://drm.maipdf.com/api/app/licenses/create
+→ 后端只写 license 数据库和 server_half
+→ App 本地生成 locked HTML
+→ App 本地封 .maipdf
+→ Protected Viewer 打开 .maipdf
+→ locked HTML JS 调 /api/unlock 扣次数并拿 server_half</code></pre>
+            <table class="table table-bordered table-sm small mb-0">
+              <thead><tr><th>文件</th><th>作用</th></tr></thead>
+              <tbody>
+                <tr><td><code>lib/utils/local_drm_packager.dart</code></td><td>Flutter 本地加密、拆 key、生成 locked HTML、封包。</td></tr>
+                <tr><td><code>AustraliaGuide/functions/api/app/licenses/create.ts</code></td><td>后端只写数据库，不接收 PDF 原文。</td></tr>
+                <tr><td><code>AustraliaGuide/functions/api/unlock.ts</code></td><td>阅读时校验次数/过期，并返回 server half 候选 parts。</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card card-work">
           <div class="card-header"><i class="fas fa-sticky-note me-2"></i>笔记与杂项</div>
           <div class="card-body">
             <p class="text-muted small">此处记录零散想法、链接、会议要点等。直接改本段 HTML 或追加新卡片即可。</p>
             <p class="mb-0">示例：终端重启 = 新开终端 <kbd>Ctrl+Shift+`</kbd>；Windows 开发 Flutter 需开「开发人员模式」避免 symlink 报错。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 教学 -->
+      <div class="tab-pane fade" id="pane-teaching" role="tabpanel">
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-graduation-cap me-2"></i>Dart / Flutter 入门：先看懂 maipdf_home_page.dart</div>
+          <div class="card-body">
+            <p class="meta-bar">日期：2026-05-19 · 适合对象：没有学过 Dart、Flutter、Android 编程，但已经有 MaiPDF 网页/PHP 项目基础。</p>
+
+            <h3>0. 先建立一个整体感觉</h3>
+            <p>Flutter App 不是由 HTML 页面组成的，而是由很多 <strong>Widget</strong> 组成的。你可以先把 Widget 理解成“界面零件”：文字、按钮、卡片、输入框、整页页面，全部都是 Widget。</p>
+            <p>当前 App 最重要的链路是：</p>
+            <pre class="bg-dark text-light p-3 rounded small"><code>lib/main.dart
+└── MyApp
+    └── MaterialApp(home: MaipdfHomePage)
+        └── lib/screens/maipdf_home_page.dart
+            ├── Cloud Tab → Maipdf2026Screen
+            └── DRM Tab
+                ├── DrmSecureSharePage
+                └── DrmProtectedViewerPage</code></pre>
+            <div class="border rounded p-3 bg-light mb-3">
+              <strong>记住一句话：</strong><code>main.dart</code> 负责启动 App；<code>maipdf_home_page.dart</code> 是首页；首页负责把用户带到 Cloud、DRM 打包、DRM 阅读三个功能页面。
+            </div>
+
+            <h3>1. 当前项目里哪些 Dart 文件正在用</h3>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>文件</th><th>状态</th><th>作用</th></tr></thead>
+              <tbody>
+                <tr><td><code>lib/main.dart</code></td><td><span class="badge bg-success">正在用</span></td><td>App 启动入口，创建 <code>MyApp</code>，并指定首页 <code>MaipdfHomePage</code>。</td></tr>
+                <tr><td><code>lib/screens/maipdf_home_page.dart</code></td><td><span class="badge bg-success">正在用</span></td><td>首页。显示 MaiPDF 标题、Cloud / DRM 两个 Tab，并负责跳转。</td></tr>
+                <tr><td><code>lib/screens/maipdf2026/maipdf2026_screen.dart</code></td><td><span class="badge bg-success">正在用</span></td><td>Cloud Sharing 原生页面：上传 PDF、设置参数、生成链接和二维码。</td></tr>
+                <tr><td><code>lib/screens/drm_secure_share_page.dart</code></td><td><span class="badge bg-success">正在用</span></td><td>DRM 打包页面：选择 PDF，本地加密封包，调用 <code>drm.maipdf.com/api/app/licenses/create</code>，保存 <code>.maipdf</code>，显示两个码。</td></tr>
+                <tr><td><code>lib/screens/drm_protected_viewer_page.dart</code></td><td><span class="badge bg-success">正在用</span></td><td>DRM 阅读页面：选择 <code>.maipdf</code>/HTML，在 App 中显示 locked HTML。</td></tr>
+                <tr><td><code>lib/screens/cloud_share_page.dart</code></td><td><span class="badge bg-secondary">暂时未接入口</span></td><td>旧 WebView 版本。当前首页没有跳到它，主要保留备用。</td></tr>
+              </tbody>
+            </table>
+
+            <h3>2. maipdf_home_page.dart 是什么</h3>
+            <p><code>maipdf_home_page.dart</code> 是当前 App 的首页文件。用户打开 App 后，首先看到的就是它。</p>
+            <p>它负责三件事：</p>
+            <ul>
+              <li>画首页：标题 MaiPDF、副标题、Cloud / DRM 两个 Tab。</li>
+              <li>展示入口卡片：Cloud Sharing、DRM Secure Share、Protected Viewer。</li>
+              <li>处理跳转：用户点按钮后，打开对应页面。</li>
+            </ul>
+            <pre class="bg-dark text-light p-3 rounded small"><code>import 'package:flutter/material.dart';
+import 'drm_protected_viewer_page.dart';
+import 'drm_secure_share_page.dart';
+import 'maipdf2026/maipdf2026_screen.dart';</code></pre>
+            <p>这几行 <code>import</code> 的意思是：这个首页要使用 Flutter 的 Material UI，也要能打开三个页面。</p>
+
+            <h3>3. class MaipdfHomePage extends StatelessWidget</h3>
+            <pre class="bg-dark text-light p-3 rounded small"><code>class MaipdfHomePage extends StatelessWidget {
+  const MaipdfHomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    ...
+  }
+}</code></pre>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>代码</th><th>意思</th></tr></thead>
+              <tbody>
+                <tr><td><code>class MaipdfHomePage</code></td><td>定义一个叫 <code>MaipdfHomePage</code> 的类。这个类就是首页。</td></tr>
+                <tr><td><code>extends StatelessWidget</code></td><td>它是一个“无状态 Widget”。首页本身不保存复杂数据，所以用 <code>StatelessWidget</code>。</td></tr>
+                <tr><td><code>const MaipdfHomePage({super.key})</code></td><td>构造函数。Flutter 用 key 管理组件身份，先不用深究。</td></tr>
+                <tr><td><code>Widget build(BuildContext context)</code></td><td>画页面的方法。Flutter 要显示这个页面时，就执行 <code>build</code>。</td></tr>
+              </tbody>
+            </table>
+            <div class="border rounded p-3 bg-light mb-3">
+              <strong>StatelessWidget 不是“不动”。</strong>它的意思是“这个组件自己不管理状态”。按钮点击仍然可以跳页面。上传进度、输入框内容这类会变化的数据，一般放在 <code>StatefulWidget</code> 里。
+            </div>
+
+            <h3>4. build 方法：Flutter 怎么画首页</h3>
+            <p><code>build</code> 方法返回一棵 Widget 树。你可以把它理解成“页面结构说明书”。</p>
+            <pre class="bg-dark text-light p-3 rounded small"><code>return Scaffold(
+  backgroundColor: const Color(0xFFF6F2FF),
+  body: SafeArea(
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 430),
+        child: DefaultTabController(...),
+      ),
+    ),
+  ),
+);</code></pre>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>Widget</th><th>作用</th></tr></thead>
+              <tbody>
+                <tr><td><code>Scaffold</code></td><td>页面骨架。类似一个完整页面容器。</td></tr>
+                <tr><td><code>backgroundColor</code></td><td>页面背景色。</td></tr>
+                <tr><td><code>SafeArea</code></td><td>避开手机刘海、状态栏、底部系统区域。</td></tr>
+                <tr><td><code>Center</code></td><td>把内容居中。</td></tr>
+                <tr><td><code>ConstrainedBox(maxWidth: 430)</code></td><td>限制最大宽度，让 Chrome 测试时也像手机 App。</td></tr>
+                <tr><td><code>DefaultTabController</code></td><td>管理 Cloud / DRM 两个 Tab。</td></tr>
+              </tbody>
+            </table>
+
+            <h3>5. Cloud / DRM 两个 Tab 怎么来的</h3>
+            <pre class="bg-dark text-light p-3 rounded small"><code>DefaultTabController(
+  length: 2,
+  child: Column(
+    children: [
+      TabBar(...),
+      Expanded(child: TabBarView(...)),
+    ],
+  ),
+)</code></pre>
+            <p><code>TabBar</code> 是上方两个按钮，<code>TabBarView</code> 是下面对应内容。顺序必须一一对应。</p>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>TabBar</th><th>TabBarView</th></tr></thead>
+              <tbody>
+                <tr><td><code>Tab(text: 'Cloud')</code></td><td>第一个 child：Cloud Sharing 卡片。</td></tr>
+                <tr><td><code>Tab(text: 'DRM')</code></td><td>第二个 child：DRM Secure Share + Protected Viewer 卡片。</td></tr>
+              </tbody>
+            </table>
+            <div class="border rounded p-3 bg-light mb-3">
+              如果以后想加第三个 Tab，比如 Records，就要把 <code>length</code> 改成 3，同时 <code>TabBar</code> 里加一个 Tab，<code>TabBarView</code> 里也加一个 child。
+            </div>
+
+            <h3>6. 为什么点按钮会跳页面</h3>
+            <p>首页里有三个导航函数，分别打开三个页面。</p>
+            <pre class="bg-dark text-light p-3 rounded small"><code>void _openCloudShare(BuildContext context) {
+  Navigator.of(context).push(
+    MaterialPageRoute&lt;void&gt;(
+      builder: (context) =&gt; const Maipdf2026Screen(),
+    ),
+  );
+}</code></pre>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>代码</th><th>意思</th></tr></thead>
+              <tbody>
+                <tr><td><code>Navigator.of(context)</code></td><td>找到当前 App 的页面导航器。</td></tr>
+                <tr><td><code>push(...)</code></td><td>压入一个新页面，也就是打开新页面。</td></tr>
+                <tr><td><code>MaterialPageRoute</code></td><td>用 Material 风格打开页面。</td></tr>
+                <tr><td><code>builder: ... Maipdf2026Screen()</code></td><td>告诉 Flutter 新页面是谁。</td></tr>
+              </tbody>
+            </table>
+            <pre class="bg-dark text-light p-3 rounded small"><code>_openDrmShare(context)  → DrmSecureSharePage
+_openDrmViewer(context) → DrmProtectedViewerPage</code></pre>
+
+            <h3>7. 为什么要拆成 _CloudShareCard / _DrmShareCard</h3>
+            <p>首页下面有几个以 <code>_</code> 开头的小类，例如 <code>_CloudShareCard</code>、<code>_DrmShareCard</code>、<code>_DrmViewerCard</code>。它们都是首页内部的小组件。</p>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>组件</th><th>显示什么</th></tr></thead>
+              <tbody>
+                <tr><td><code>_CloudShareCard</code></td><td>Online MaiPDF Cloud Sharing 卡片，按钮打开 Cloud 页面。</td></tr>
+                <tr><td><code>_DrmShareCard</code></td><td>DRM Secure Share 卡片，按钮打开生成 <code>.maipdf</code> 页面。</td></tr>
+                <tr><td><code>_DrmViewerCard</code></td><td>Protected Viewer 卡片，按钮打开 <code>.maipdf</code>/HTML 阅读页面。</td></tr>
+              </tbody>
+            </table>
+            <p>Dart 里名字前面有下划线，比如 <code>_CloudShareCard</code>，表示它只在当前文件里可见。你可以理解成 <code>private</code>。</p>
+
+            <h3>8. 一个卡片组件长什么样</h3>
+            <pre class="bg-dark text-light p-3 rounded small"><code>class _DrmViewerCard extends StatelessWidget {
+  const _DrmViewerCard({required this.onStart});
+
+  final VoidCallback onStart;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        child: Column(
+          children: [
+            Icon(...),
+            Text(...),
+            FilledButton.icon(onPressed: onStart, ...),
+          ],
+        ),
+      ),
+    );
+  }
+}</code></pre>
+            <p>它的核心意思是：这个卡片接收一个 <code>onStart</code> 函数。当用户点按钮时，就执行 <code>onStart</code>。首页把 <code>_openDrmViewer</code> 传进去，所以按钮会打开 Protected Viewer。</p>
+
+            <h3>9. 和网页/PHP 的对应关系</h3>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>网页/PHP 习惯</th><th>Flutter 里的对应</th></tr></thead>
+              <tbody>
+                <tr><td><code>home.html</code></td><td><code>MaipdfHomePage</code> 这个 Widget。</td></tr>
+                <tr><td><code>&lt;a&gt;</code> 标签跳转页面</td><td><code>Navigator.push</code> 打开新页面。</td></tr>
+                <tr><td><code>div/card</code></td><td><code>Card</code>、<code>Container</code>、<code>Padding</code>、<code>Column</code>。</td></tr>
+                <tr><td><code>button onclick</code></td><td><code>FilledButton</code> 的 <code>onPressed</code>。</td></tr>
+                <tr><td>CSS 最大宽度</td><td><code>ConstrainedBox(maxWidth: 430)</code>。</td></tr>
+                <tr><td>页面里 include 其他文件</td><td>Dart <code>import</code> 其他 <code>.dart</code> 文件。</td></tr>
+              </tbody>
+            </table>
+
+            <h3>10. 你现在看代码时的路线</h3>
+            <ol>
+              <li>先看 <code>lib/main.dart</code>，知道 App 从哪里启动。</li>
+              <li>再看 <code>lib/screens/maipdf_home_page.dart</code>，知道首页怎么显示和跳转。</li>
+              <li>再看 <code>lib/screens/drm_secure_share_page.dart</code>，理解选择文件、POST API、保存 <code>.maipdf</code>。</li>
+              <li>再看 <code>lib/screens/drm_protected_viewer_page.dart</code>，理解选择 <code>.maipdf</code>、解析 HTML、展示 viewer。</li>
+              <li>最后看 <code>maipdf2026_screen.dart</code>，因为它最长，逻辑最多。</li>
+            </ol>
+
+            <h3>11. 迷你词典</h3>
+            <table class="table table-bordered table-sm small">
+              <thead><tr><th>词</th><th>简单理解</th></tr></thead>
+              <tbody>
+                <tr><td><code>Widget</code></td><td>界面零件。页面、按钮、文字、布局都是 Widget。</td></tr>
+                <tr><td><code>StatelessWidget</code></td><td>自己不保存复杂状态的 Widget。首页就是这种。</td></tr>
+                <tr><td><code>StatefulWidget</code></td><td>需要保存状态的 Widget，比如上传中、输入框内容、结果码。</td></tr>
+                <tr><td><code>build</code></td><td>画界面的方法。返回当前页面长什么样。</td></tr>
+                <tr><td><code>context</code></td><td>当前 Widget 所在位置的信息。导航、主题、弹窗常要用它。</td></tr>
+                <tr><td><code>Navigator</code></td><td>页面导航器。<code>push</code> 打开新页面，<code>pop</code> 返回上一页。</td></tr>
+                <tr><td><code>Column</code></td><td>竖向排列。</td></tr>
+                <tr><td><code>Row</code></td><td>横向排列。</td></tr>
+                <tr><td><code>Expanded</code></td><td>占用剩余空间。</td></tr>
+                <tr><td><code>const</code></td><td>编译期固定对象。Flutter 里多用 <code>const</code> 可以更高效。</td></tr>
+              </tbody>
+            </table>
+
+            <h3>12. 小练习</h3>
+            <p>如果你想练一下，可以做这些小改动，每次改完按 <kbd>R</kbd> 热重启看效果。</p>
+            <ul class="mb-0">
+              <li>把首页标题 <code>MaiPDF</code> 改成 <code>MaiPDF App</code>。</li>
+              <li>把 DRM Tab 的 <code>START</code> 改成 <code>CREATE</code>。</li>
+              <li>在 <code>_DrmViewerCard</code> 的描述里加一句：<code>Android blocks screenshots.</code></li>
+              <li>把 <code>ConstrainedBox</code> 的 <code>maxWidth</code> 从 430 改成 390，看看页面更像手机。</li>
+            </ul>
           </div>
         </div>
       </div>
