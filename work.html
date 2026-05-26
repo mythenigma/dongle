@@ -177,7 +177,7 @@
         <div class="card card-work">
           <div class="card-header"><i class="fas fa-sitemap me-2"></i>当前 App 结构图（Dart 文件关系）</div>
           <div class="card-body">
-            <p class="meta-bar">更新日期：2026-05-20 · 说明：下面是当前 Flutter App 真正在用的页面、工具类、平台桥接和后端关系。</p>
+            <p class="meta-bar">更新日期：2026-05-26 · 说明：下面是当前 Flutter App 真正在用的页面、工具类、平台桥接和后端关系。</p>
 
             <h3>1. 总体调用关系</h3>
             <pre class="bg-dark text-light p-3 rounded small"><code>lib/main.dart
@@ -192,20 +192,36 @@
          │        └─ result → link + read code + modify code + QR
          │
          └─ DRM Tab
+            ├─ Sign in with Google
+            │  └─ lib/utils/maipdf_auth_service.dart
+            │     ├─ Firebase Auth Google provider
+            │     ├─ POST https://drm.maipdf.com/api/auth/session
+            │     └─ later API calls carry Authorization: Bearer &lt;idToken&gt;
+            │
             ├─ DRM Secure Share → DrmSecureSharePage
             │  └─ lib/screens/drm_secure_share_page.dart
             │     ├─ choose PDF
             │     ├─ local AES-GCM encrypt + key split + locked HTML
+            │     ├─ if signed in, attach Firebase Bearer token
             │     ├─ POST https://drm.maipdf.com/api/app/licenses/create
             │     ├─ build package locally, wrap with MAIPDF1, save as .maipdf
-            │     └─ show license_id + mod_code
+            │     ├─ show license_id + mod_code
+            │     └─ Manage license → DrmLicenseManagePage
+            │        └─ lib/screens/drm_license_manage_page.dart
+            │           ├─ POST /api/licenses/:lid/check
+            │           ├─ POST /api/licenses/:lid/extend
+            │           ├─ POST /api/licenses/:lid/revoke
+            │           └─ POST /api/licenses/:lid/delete
             │
-            └─ Protected Viewer → DrmProtectedViewerPage
+            ├─ Protected Viewer → DrmProtectedViewerPage
                └─ lib/screens/drm_protected_viewer_page.dart
                   ├─ choose .maipdf / older ZIP / locked HTML
                   ├─ extract locked HTML from package
                   ├─ enable SecureScreen
-                  └─ render HTML via lib/widgets/html_viewer.dart</code></pre>
+                  └─ render HTML via lib/widgets/html_viewer.dart
+            │
+            └─ License Manager → DrmLicenseManagePage
+               └─ manual license_id + mod_code management</code></pre>
 
             <h3>2. 本地 Pack 流程图：Dart 和 TS/JS 怎么交流</h3>
             <pre class="bg-dark text-light p-3 rounded small"><code>发送方 App 生成 .maipdf
@@ -244,7 +260,24 @@ lib/screens/drm_protected_viewer_page.dart
 locked HTML 内部 JavaScript
 └─ 用 html_half + server_half 还原 full_key
 └─ Web Crypto AES-GCM 解密 PDF
-└─ PDF.js 渲染 PDF 页面</code></pre>
+└─ PDF.js 渲染 PDF 页面
+
+授权管理 App 页面
+
+lib/screens/drm_license_manage_page.dart
+├─ 如果用户登录，先 GET https://drm.maipdf.com/api/me/licenses
+│  └─ AustraliaGuide/functions/api/me/licenses.ts
+├─ 旧匿名 license 可 POST https://drm.maipdf.com/api/me/bind
+│  └─ AustraliaGuide/functions/api/me/bind.ts
+└─ 用户输入、从列表选择、或自动带入 license_id / mod_code
+   ├─ Dart → POST https://drm.maipdf.com/api/licenses/:lid/check
+   │  └─ AustraliaGuide/functions/api/licenses/[lid]/check.ts
+   ├─ Dart → POST https://drm.maipdf.com/api/licenses/:lid/extend
+   │  └─ AustraliaGuide/functions/api/licenses/[lid]/extend.ts
+   ├─ Dart → POST https://drm.maipdf.com/api/licenses/:lid/revoke
+   │  └─ AustraliaGuide/functions/api/licenses/[lid]/revoke.ts
+   └─ Dart → POST https://drm.maipdf.com/api/licenses/:lid/delete
+      └─ AustraliaGuide/functions/api/licenses/[lid]/delete.ts</code></pre>
 
             <h3>3. Dart 页面文件：谁在用谁</h3>
             <table class="table table-bordered table-sm small">
@@ -260,7 +293,7 @@ locked HTML 内部 JavaScript
                   <td><code>lib/screens/maipdf_home_page.dart</code></td>
                   <td><span class="badge bg-success">正在用</span></td>
                   <td><code>main.dart</code></td>
-                  <td>首页；包含 <code>Cloud</code> / <code>DRM</code> 两个 Tab，负责导航到三个主要页面。</td>
+                  <td>首页；包含 <code>Cloud</code> / <code>DRM</code> 两个 Tab，顶部提供 Google 登录/退出，负责导航到 Cloud 分享、DRM 打包、DRM 阅读、授权管理页面。</td>
                 </tr>
                 <tr>
                   <td><code>lib/screens/maipdf2026/maipdf2026_screen.dart</code></td>
@@ -272,7 +305,13 @@ locked HTML 内部 JavaScript
                   <td><code>lib/screens/drm_secure_share_page.dart</code></td>
                   <td><span class="badge bg-success">正在用</span></td>
                   <td>首页 DRM Tab → <code>DRM Secure Share</code></td>
-                  <td>DRM 打包页面；本地加密和封包，只连接 <code>https://drm.maipdf.com/api/app/licenses/create</code> 写入 license / server_half，再调用 <code>download_helper</code> 保存为 <code>.maipdf</code>。</td>
+                  <td>DRM 打包页面；本地加密和封包，只连接 <code>https://drm.maipdf.com/api/app/licenses/create</code> 写入 license / server_half；如果用户已登录，会带 Firebase Bearer token，让 license 自动归属到该 Google 账号。结果区的 <code>Manage license</code> 会打开 App 原生管理页。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/screens/drm_license_manage_page.dart</code></td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td><code>DrmSecureSharePage</code> 结果区 → <code>Manage license</code>；首页 DRM Tab → <code>License Manager</code></td>
+                  <td>App 原生授权管理页；未登录时用 <code>license_id</code> + <code>mod_code</code>，登录后可拉取账号名下 licenses，并通过 Bearer token 查询、加次数、延期、恢复、撤销、软删除。</td>
                 </tr>
                 <tr>
                   <td><code>lib/screens/drm_protected_viewer_page.dart</code></td>
@@ -296,7 +335,12 @@ locked HTML 内部 JavaScript
                 <tr>
                   <td><code>lib/utils/local_drm_packager.dart</code></td>
                   <td><code>drm_secure_share_page.dart</code></td>
-                  <td>App 本地 pack 核心：生成 key、拆 key、计算 SHA-256、调用 <code>/api/app/licenses/create</code>、AES-GCM 加密 PDF、生成 locked HTML、封 ZIP-compatible package。</td>
+                  <td>App 本地 pack 核心：生成 key、拆 key、计算 SHA-256、调用 <code>/api/app/licenses/create</code>、AES-GCM 加密 PDF、生成 locked HTML、封 ZIP-compatible package；登录时会附带 <code>Authorization: Bearer</code>。</td>
+                </tr>
+                <tr>
+                  <td><code>lib/utils/maipdf_auth_service.dart</code></td>
+                  <td><code>main.dart</code>、<code>maipdf_home_page.dart</code>、DRM 页面</td>
+                  <td>App 登录服务：Firebase Google 登录、退出、拿 ID token、调用 <code>/api/auth/session</code> 同步后端 user 行、为 DRM API 提供 Bearer header。</td>
                 </tr>
                 <tr>
                   <td><code>lib/utils/download_helper.dart</code></td>
@@ -369,6 +413,18 @@ locked HTML 内部 JavaScript
                   <td><code>POST https://drm.maipdf.com/api/unlock</code></td>
                   <td>由 locked HTML 内部 JS 调用，用于扣次数、校验过期、获取解密 key half。</td>
                 </tr>
+                <tr>
+                  <td>DRM 授权管理</td>
+                  <td><code>DrmLicenseManagePage</code></td>
+                  <td><code>POST https://drm.maipdf.com/api/licenses/:lid/check|extend|revoke|delete</code></td>
+                  <td>App 原生页面调用网页端同一套管理 API；登录用户走 Bearer token，匿名/手动管理走 modification code。</td>
+                </tr>
+                <tr>
+                  <td>DRM 我的授权列表</td>
+                  <td><code>DrmLicenseManagePage</code></td>
+                  <td><code>GET https://drm.maipdf.com/api/me/licenses</code> / <code>POST /api/me/bind</code></td>
+                  <td>登录后列出账号拥有的 license；也可以把旧的匿名 license 通过 <code>license_id + mod_code</code> 绑定进当前账号。</td>
+                </tr>
               </tbody>
             </table>
 
@@ -380,13 +436,55 @@ locked HTML 内部 JavaScript
                   <td><code>functions/api/app/licenses/create.ts</code></td>
                   <td><code>local_drm_packager.dart</code> 通过 HTTPS POST 调用</td>
                   <td><span class="badge bg-success">正在用</span></td>
-                  <td>App 本地 pack 专用。只写 D1 数据库：<code>license_id</code>、<code>mod_code</code>、<code>server_half</code>、次数、过期、文件元数据。</td>
+                  <td>App 本地 pack 专用。只写 D1 数据库：<code>license_id</code>、<code>mod_code</code>、<code>server_half</code>、次数、过期、文件元数据；如果请求带 Firebase Bearer token，会写入 <code>owner_uid</code> / <code>created_by_email</code>。</td>
+                </tr>
+                <tr>
+                  <td><code>functions/api/auth/session.ts</code></td>
+                  <td><code>maipdf_auth_service.dart</code> 登录后调用</td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>校验 Firebase ID token，并 upsert <code>users</code> 表，记录 Google 邮箱、头像、最后访问时间。</td>
+                </tr>
+                <tr>
+                  <td><code>functions/api/me/licenses.ts</code></td>
+                  <td><code>drm_license_manage_page.dart</code> 登录后调用</td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>返回当前 Google 账号拥有的 license 列表，不返回 <code>keyshare_server</code>，但可返回 <code>mod_code</code> 给拥有者。</td>
+                </tr>
+                <tr>
+                  <td><code>functions/api/me/bind.ts</code></td>
+                  <td><code>drm_license_manage_page.dart</code> 登录后调用</td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>把旧的匿名 license 绑定到当前 Google 账号，要求同时提供正确的 <code>license_id</code> 和 <code>mod_code</code>。</td>
                 </tr>
                 <tr>
                   <td><code>functions/api/unlock.ts</code></td>
                   <td><code>.maipdf</code> 内 locked HTML 的 JavaScript 调用</td>
                   <td><span class="badge bg-success">正在用</span></td>
                   <td>阅读时校验授权、扣次数，并返回混入 decoy 的 <code>server_half</code> 候选 parts。</td>
+                </tr>
+                <tr>
+                  <td><code>functions/api/licenses/[lid]/check.ts</code></td>
+                  <td><code>drm_license_manage_page.dart</code> 通过 HTTPS POST 调用</td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>App 管理页查询公开 license 状态：文件名、状态、最大次数、已用次数、剩余次数、过期时间等。</td>
+                </tr>
+                <tr>
+                  <td><code>functions/api/licenses/[lid]/extend.ts</code></td>
+                  <td><code>drm_license_manage_page.dart</code> 通过 HTTPS POST 调用</td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>App 管理页用于增加/减少次数、延长过期时间、把 revoked/deleted 状态恢复为 <code>active</code>。</td>
+                </tr>
+                <tr>
+                  <td><code>functions/api/licenses/[lid]/revoke.ts</code></td>
+                  <td><code>drm_license_manage_page.dart</code> 通过 HTTPS POST 调用</td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>App 管理页撤销授权，读者打开时会被拒绝；以后可通过 Reactivate 恢复。</td>
+                </tr>
+                <tr>
+                  <td><code>functions/api/licenses/[lid]/delete.ts</code></td>
+                  <td><code>drm_license_manage_page.dart</code> 通过 HTTPS POST 调用</td>
+                  <td><span class="badge bg-success">正在用</span></td>
+                  <td>App 管理页软删除授权，数据库记录保留，但读者会被阻止打开。</td>
                 </tr>
                 <tr>
                   <td><code>functions/api/pack.ts</code></td>
@@ -412,6 +510,38 @@ locked HTML 内部 JavaScript
         </div>
 
         <div class="card card-work">
+          <div class="card-header"><i class="fas fa-user-check me-2"></i>2026-05-26 升级记录：App 接入 Google 登录和账号 License 列表</div>
+          <div class="card-body">
+            <p class="meta-bar">日期：2026-05-26 · 目标：让 App 像 <code>drm.maipdf.com/dashboard</code> 一样支持 Google 登录，并把新生成的 license 记录到用户账号。</p>
+            <ul class="small mb-0">
+              <li>新增 <code>lib/firebase_options.dart</code>，复用 <code>maipdf-login</code> Firebase 项目的公开配置。</li>
+              <li>新增 <code>lib/utils/maipdf_auth_service.dart</code>，负责 Firebase Google 登录、退出、获取 ID token，并调用 <code>https://drm.maipdf.com/api/auth/session</code> 同步后端用户记录。</li>
+              <li><code>lib/main.dart</code> 启动时初始化 Firebase 和 <code>MaiPdfAuthService</code>。</li>
+              <li>首页顶部新增账号条：未登录时提示 Sign in，登录后显示 Google 邮箱并支持退出。</li>
+              <li><code>LocalDrmPackager</code> 支持传入 <code>idToken</code>；用户登录时，<code>DRM Secure Share</code> 会把 <code>Authorization: Bearer &lt;idToken&gt;</code> 发给 <code>/api/app/licenses/create</code>，后端会写入 <code>owner_uid</code>。</li>
+              <li><code>DrmLicenseManagePage</code> 登录后会调用 <code>/api/me/licenses</code> 显示账号名下 licenses，并支持通过 <code>/api/me/bind</code> 把旧匿名 license 绑定到账户。</li>
+              <li>保留匿名管理：没登录时仍可用 <code>license_id + mod_code</code> 管理，不影响旧流程。</li>
+              <li>注意：Windows 上添加 Firebase 插件后，Flutter 提示需要开启 Developer Mode 才能构建插件 symlink；安卓发布版后续也应在 Firebase Console 中正式注册 Android app 包名和 SHA 指纹。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-sliders-h me-2"></i>2026-05-26 升级记录：App 原生 Manage License</div>
+          <div class="card-body">
+            <p class="meta-bar">日期：2026-05-26 · 目标：不再只跳转网页管理页，让 App 内也能管理刚生成的 .maipdf 授权。</p>
+            <ul class="small mb-0">
+              <li>新增 <code>lib/screens/drm_license_manage_page.dart</code>，作为 App 原生授权管理页面。</li>
+              <li><code>lib/screens/drm_secure_share_page.dart</code> 的 <code>Manage license</code> 按钮已改为打开 App 页面，并自动带入当前生成的 <code>license_id</code> 和 <code>mod_code</code>。</li>
+              <li><code>lib/screens/maipdf_home_page.dart</code> 的 DRM 首页新增 <strong>License Manager</strong> 卡片，用户不用先生成文件，也可以直接进入管理页手动输入两个码。</li>
+              <li>App 管理页复用 <code>drm.maipdf.com</code> 已有接口：<code>/api/licenses/:lid/check</code>、<code>/extend</code>、<code>/revoke</code>、<code>/delete</code>。</li>
+              <li>当前支持：查询状态、复制 License ID、增加阅读次数、延长有效期、恢复 active、撤销访问、软删除授权。</li>
+              <li>网页端 <code>https://drm.maipdf.com/manage</code> 保留不变；App 页面只是同一套后端管理逻辑的移动端入口。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card card-work">
           <div class="card-header"><i class="fas fa-file-shield me-2"></i>2026-05-20 升级记录：DRM 输出 .maipdf</div>
           <div class="card-body">
             <p class="meta-bar">日期：2026-05-20 · 目标：让用户拿到的是 MaiPDF 专用文件，而不是普通 ZIP 文件。</p>
@@ -419,6 +549,7 @@ locked HTML 内部 JavaScript
               <li><code>DrmSecureSharePage</code> 现在在 App 本地完成 AES-GCM 加密、key split、locked HTML 生成、ZIP-compatible package 生成，再加 <code>MAIPDF1</code> 文件头保存为 <code>.maipdf</code>。</li>
               <li>App 不再上传 PDF 给后端 pack；只调用 <code>https://drm.maipdf.com/api/app/licenses/create</code> 写入 license 和 <code>server_half</code>，不影响网页端现有 <code>/api/pack</code>。</li>
               <li><code>Protected Viewer</code> 的文件选择支持 <code>.maipdf</code>，并优先引导用户打开这种专用文件。</li>
+              <li>下载文件名改为用户原 PDF 文件名加 <code>.maipdf</code> 后缀，例如 <code>报价单.pdf</code> → <code>报价单.maipdf</code>，不再加很长的 <code>MaiPDF-AppSecureShare-...</code> 前缀。</li>
               <li>为了兼容之前测试生成的文件，Viewer 暂时仍支持旧 <code>.zip</code> 和解压后的 locked <code>.html</code>。</li>
               <li>当前第一版本地 pack 使用 App 内置轻量 viewer HTML；Viewer 会先识别 <code>MAIPDF1</code>，再读取里面的 locked HTML。以后可以把 PDF.js 内联进 App 模板，减少外部 CDN 依赖。</li>
             </ul>
@@ -450,7 +581,7 @@ locked HTML 内部 JavaScript
             <ul class="small">
               <li>在 <code>maipdf_home_page.dart</code> 增加 <code>DefaultTabController</code>，首页新增两个 Tab：<strong>Cloud</strong> 和 <strong>DRM</strong>。</li>
               <li><strong>Cloud</strong>：保留原 Online MaiPDF Cloud Sharing 入口。</li>
-              <li><strong>DRM</strong>：新增 DRM Secure Share 和 Protected Viewer 两个入口。</li>
+              <li><strong>DRM</strong>：新增 DRM Secure Share、Protected Viewer、License Manager 三个入口。</li>
             </ul>
 
             <h3>4. DRM Secure Share：生成受保护 ZIP</h3>
@@ -574,7 +705,7 @@ locked HTML 内部 JavaScript
             <h3>3. LINK_AND_FILES.md：App 内链接和文件</h3>
             <ul class="small">
               <li>早期版本只有首页 <strong>Online MaiPDF Cloud Sharing</strong> 入口，用 WebView 打开线上 <code>https://maipdf.com/pdf/maipdf2026.html</code>。</li>
-              <li>现在首页已经升级成 <strong>Cloud / DRM</strong> 两个 Tab，Cloud 使用原生 Flutter 页面 <code>Maipdf2026Screen</code>，DRM 使用 App 本地 pack 和 Protected Viewer。</li>
+              <li>现在首页已经升级成 <strong>Cloud / DRM</strong> 两个 Tab，Cloud 使用原生 Flutter 页面 <code>Maipdf2026Screen</code>，DRM 使用 App 本地 pack、Protected Viewer 和 License Manager。</li>
               <li><code>maipdf_htmls/</code> 这类网页源码目录只是参考，不是 Flutter 路由；Flutter 真正运行的主要是 <code>lib/</code>。</li>
               <li>如果以后要把某个 HTML 页面打包进 App，需要放到 <code>assets/html/</code> 并在 <code>pubspec.yaml</code> 声明。</li>
             </ul>
@@ -643,7 +774,7 @@ locked HTML 内部 JavaScript
                 ├── DrmSecureSharePage
                 └── DrmProtectedViewerPage</code></pre>
             <div class="border rounded p-3 bg-light mb-3">
-              <strong>记住一句话：</strong><code>main.dart</code> 负责启动 App；<code>maipdf_home_page.dart</code> 是首页；首页负责把用户带到 Cloud、DRM 打包、DRM 阅读三个功能页面。
+              <strong>记住一句话：</strong><code>main.dart</code> 负责启动 App；<code>maipdf_home_page.dart</code> 是首页；首页负责把用户带到 Cloud、DRM 打包、DRM 阅读、License 管理这些功能页面。
             </div>
 
             <h3>1. 当前项目里哪些 Dart 文件正在用</h3>
@@ -664,7 +795,7 @@ locked HTML 内部 JavaScript
             <p>它负责三件事：</p>
             <ul>
               <li>画首页：标题 MaiPDF、副标题、Cloud / DRM 两个 Tab。</li>
-              <li>展示入口卡片：Cloud Sharing、DRM Secure Share、Protected Viewer。</li>
+              <li>展示入口卡片：Cloud Sharing、DRM Secure Share、Protected Viewer、License Manager。</li>
               <li>处理跳转：用户点按钮后，打开对应页面。</li>
             </ul>
             <pre class="bg-dark text-light p-3 rounded small"><code>import 'package:flutter/material.dart';
@@ -735,7 +866,7 @@ import 'maipdf2026/maipdf2026_screen.dart';</code></pre>
               <thead><tr><th>TabBar</th><th>TabBarView</th></tr></thead>
               <tbody>
                 <tr><td><code>Tab(text: 'Cloud')</code></td><td>第一个 child：Cloud Sharing 卡片。</td></tr>
-                <tr><td><code>Tab(text: 'DRM')</code></td><td>第二个 child：DRM Secure Share + Protected Viewer 卡片。</td></tr>
+                <tr><td><code>Tab(text: 'DRM')</code></td><td>第二个 child：DRM Secure Share + Protected Viewer + License Manager 卡片。</td></tr>
               </tbody>
             </table>
             <div class="border rounded p-3 bg-light mb-3">
@@ -771,6 +902,7 @@ _openDrmViewer(context) → DrmProtectedViewerPage</code></pre>
                 <tr><td><code>_CloudShareCard</code></td><td>Online MaiPDF Cloud Sharing 卡片，按钮打开 Cloud 页面。</td></tr>
                 <tr><td><code>_DrmShareCard</code></td><td>DRM Secure Share 卡片，按钮打开生成 <code>.maipdf</code> 页面。</td></tr>
                 <tr><td><code>_DrmViewerCard</code></td><td>Protected Viewer 卡片，按钮打开 <code>.maipdf</code>/HTML 阅读页面。</td></tr>
+                <tr><td><code>_DrmManageCard</code></td><td>License Manager 卡片，按钮打开 App 原生授权管理页面。</td></tr>
               </tbody>
             </table>
             <p>Dart 里名字前面有下划线，比如 <code>_CloudShareCard</code>，表示它只在当前文件里可见。你可以理解成 <code>private</code>。</p>

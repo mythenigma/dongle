@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../utils/download_helper.dart';
 import '../utils/local_drm_packager.dart';
+import '../utils/maipdf_auth_service.dart';
+import 'drm_license_manage_page.dart';
 
 class DrmSecureSharePage extends StatefulWidget {
   const DrmSecureSharePage({super.key});
@@ -47,10 +48,15 @@ class _DrmSecureSharePageState extends State<DrmSecureSharePage> {
     );
   }
 
-  Future<void> _openManage() async {
-    await launchUrl(
-      Uri.parse('https://drm.maipdf.com/manage'),
-      mode: LaunchMode.externalApplication,
+  void _openManage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DrmLicenseManagePage(
+          apiBase: _apiBase,
+          initialLicenseId: _licenseId,
+          initialModCode: _modCode,
+        ),
+      ),
     );
   }
 
@@ -95,17 +101,19 @@ class _DrmSecureSharePageState extends State<DrmSecureSharePage> {
         return;
       }
 
-      final package = await LocalDrmPackager(apiBase: _apiBase)
-          .packPdf(
-            pdfBytes: bytes,
-            filename: file.name,
-            maxOpens: maxOpens,
-            expiresInSeconds: _expiresInSeconds(),
-          )
-          .timeout(
-            const Duration(seconds: 180),
-            onTimeout: () => throw TimeoutException('Local pack timed out'),
-          );
+      final idToken = await MaiPdfAuthService.instance.idToken();
+      final package =
+          await LocalDrmPackager(apiBase: _apiBase, idToken: idToken)
+              .packPdf(
+                pdfBytes: bytes,
+                filename: file.name,
+                maxOpens: maxOpens,
+                expiresInSeconds: _expiresInSeconds(),
+              )
+              .timeout(
+                const Duration(seconds: 180),
+                onTimeout: () => throw TimeoutException('Local pack timed out'),
+              );
 
       String saveStatus = 'Protected .maipdf file created.';
       try {
@@ -153,9 +161,9 @@ class _DrmSecureSharePageState extends State<DrmSecureSharePage> {
 
   void _showMessage(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _copy(String label, String? value) async {
@@ -280,7 +288,10 @@ class _DrmSecureSharePageState extends State<DrmSecureSharePage> {
               hintText: '5',
               border: OutlineInputBorder(),
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -290,7 +301,10 @@ class _DrmSecureSharePageState extends State<DrmSecureSharePage> {
               labelText: 'Expiration',
               border: OutlineInputBorder(),
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
             items: const [
               DropdownMenuItem(value: '86400', child: Text('1 day')),
@@ -312,8 +326,10 @@ class _DrmSecureSharePageState extends State<DrmSecureSharePage> {
                 labelText: 'Custom days',
                 border: OutlineInputBorder(),
                 isDense: true,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
               ),
             ),
           ],
@@ -482,10 +498,7 @@ class _CodeRow extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            onPressed: onCopy,
-            icon: const Icon(Icons.copy, size: 18),
-          ),
+          IconButton(onPressed: onCopy, icon: const Icon(Icons.copy, size: 18)),
         ],
       ),
     );

@@ -20,9 +20,10 @@ class LocalDrmPackageResult {
 }
 
 class LocalDrmPackager {
-  LocalDrmPackager({required this.apiBase});
+  LocalDrmPackager({required this.apiBase, this.idToken});
 
   final String apiBase;
+  final String? idToken;
 
   static const String drmVersion = '2.0.0-app-local';
 
@@ -62,11 +63,10 @@ class LocalDrmPackager {
       nonce: iv,
       aad: utf8.encode(licenseId),
     );
-    final ciphertextWithTag = Uint8List(
-      secretBox.cipherText.length + secretBox.mac.bytes.length,
-    )
-      ..setAll(0, secretBox.cipherText)
-      ..setAll(secretBox.cipherText.length, secretBox.mac.bytes);
+    final ciphertextWithTag =
+        Uint8List(secretBox.cipherText.length + secretBox.mac.bytes.length)
+          ..setAll(0, secretBox.cipherText)
+          ..setAll(secretBox.cipherText.length, secretBox.mac.bytes);
 
     final mask = await Sha256().hash(utf8.encode(licenseId));
     final maskedHtmlHalf = Uint8List(32);
@@ -91,7 +91,7 @@ class LocalDrmPackager {
 
     return LocalDrmPackageResult(
       packageBytes: zipBytes,
-      packageFilename: 'MaiPDF-AppSecureShare-$stem-locked.maipdf',
+      packageFilename: _maipdfFilenameFromOriginal(filename),
       licenseId: licenseId,
       modCode: license.modCode,
     );
@@ -106,10 +106,15 @@ class LocalDrmPackager {
     required int expiresInSeconds,
   }) async {
     final uri = Uri.parse('$apiBase/api/app/licenses/create');
+    final headers = <String, String>{'Content-Type': 'application/json'};
+    final token = idToken;
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
     final response = await http
         .post(
           uri,
-          headers: const {'Content-Type': 'application/json'},
+          headers: headers,
           body: jsonEncode({
             'filename': filename,
             'file_size_bytes': fileSizeBytes,
@@ -124,15 +129,18 @@ class LocalDrmPackager {
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 200 || body['ok'] != true) {
-      throw StateError(body['message']?.toString() ??
-          'License create failed: HTTP ${response.statusCode}');
+      throw StateError(
+        body['message']?.toString() ??
+            'License create failed: HTTP ${response.statusCode}',
+      );
     }
 
     return _CreatedLicense(
       licenseId: body['license_id'].toString(),
       modCode: body['mod_code'].toString(),
       apiBase: body['api_base']?.toString() ?? apiBase,
-      createdAt: (body['created_at'] as num?)?.round() ??
+      createdAt:
+          (body['created_at'] as num?)?.round() ??
           DateTime.now().millisecondsSinceEpoch ~/ 1000,
       drmVersion: body['drm_version']?.toString() ?? drmVersion,
     );
@@ -182,6 +190,15 @@ String _safeStem(String filename) {
   );
   final cleaned = withoutPdf.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
   return cleaned.isEmpty ? 'document' : cleaned;
+}
+
+String _maipdfFilenameFromOriginal(String filename) {
+  final base = filename
+      .trim()
+      .replaceFirst(RegExp(r'\.pdf$', caseSensitive: false), '')
+      .replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_')
+      .trim();
+  return '${base.isEmpty ? 'document' : base}.maipdf';
 }
 
 String _escapeHtml(String value) {
