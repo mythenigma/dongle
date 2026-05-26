@@ -187,8 +187,9 @@
          ├─ Cloud Tab
          │  └─ START → Maipdf2026Screen
          │     └─ lib/screens/maipdf2026/maipdf2026_screen.dart
-         │        ├─ pick PDF → https://maipdf.com/pdf/r2upload.php
-         │        ├─ submit form → https://maipdf.com/pdf/maipdf2026_backend.php
+         │        ├─ if signed in, sync PHP session via MaiPdfCloudAuthService
+         │        ├─ pick PDF → https://maipdf.com/pdf/r2upload.php with PHP cookies
+         │        ├─ submit form → https://maipdf.com/pdf/maipdf2026_backend.php with PHP cookies
          │        └─ result → link + read code + modify code + QR
          │
          └─ DRM Tab
@@ -393,13 +394,19 @@ lib/screens/drm_license_manage_page.dart
                   <td>Cloud 上传</td>
                   <td><code>Maipdf2026Screen</code></td>
                   <td><code>POST https://maipdf.com/pdf/r2upload.php</code></td>
-                  <td>返回 <code>path</code> / <code>file_id</code>。</td>
+                  <td>返回 <code>path</code> / <code>file_id</code>。App 登录后会先同步 PHP session，并带 <code>Cookie</code> 请求；当前上传接口本身主要保存文件，不单独写用户表。</td>
                 </tr>
                 <tr>
                   <td>Cloud 生成链接</td>
                   <td><code>Maipdf2026Screen</code></td>
                   <td><code>POST https://maipdf.com/pdf/maipdf2026_backend.php</code></td>
-                  <td>返回 HTML，App 解析出链接、Read Code、Modify Code。</td>
+                  <td>返回 HTML，App 解析出链接、Read Code、Modify Code。带 PHP session cookie 后，后端现有 <code>$dengru</code> 会识别为登录邮箱，并在现有记录逻辑里把用户名和文件路径关联起来。</td>
+                </tr>
+                <tr>
+                  <td>Cloud 登录同步</td>
+                  <td><code>Maipdf2026Screen</code> / 首页登录</td>
+                  <td><code>POST https://maipdf.com/6/firebase-register.php</code> + <code>POST https://maipdf.com/6/firebase-session-login.php</code></td>
+                  <td><code>MaiPdfCloudAuthService</code> 用 Firebase 的 <code>email</code> 和 <code>uid</code> 同步 Cloud PHP 登录，并保存 <code>PHPSESSID</code> / <code>dc</code> cookie 给 Cloud 上传和生成链接使用。</td>
                 </tr>
                 <tr>
                   <td>DRM 打包</td>
@@ -506,6 +513,20 @@ lib/screens/drm_license_manage_page.dart
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <div class="card card-work">
+          <div class="card-header"><i class="fas fa-cloud-upload-alt me-2"></i>2026-05-26 升级记录：Cloud Share 上传/生成链接记录登录用户</div>
+          <div class="card-body">
+            <p class="meta-bar">日期：2026-05-26 · 目标：App 的 Cloud Share 不做完整账号中心，先确保登录用户上传并生成链接时，PHP 后端能识别用户名和文件。</p>
+            <ul class="small mb-0">
+              <li>新增 <code>lib/utils/maipdf_cloud_auth_service.dart</code>，复用 App 的 Firebase 用户，调用 Cloud PHP 现有 <code>/6/firebase-register.php</code> 和 <code>/6/firebase-session-login.php</code>。</li>
+              <li>该服务会保存 PHP 返回的 <code>PHPSESSID</code> 和 <code>dc</code> cookie。</li>
+              <li><code>Maipdf2026Screen</code> 在 bootstrap、上传 <code>r2upload.php</code>、生成链接 <code>maipdf2026_backend.php</code> 前会先同步 Cloud session，并在请求头带上 <code>Cookie</code>。</li>
+              <li>现有在线版逻辑里，真正把登录用户和 PDF 路径关联到记录的是 <code>maipdf2026_backend.php</code> 生成链接阶段的 <code>$dengru</code> / <code>block</code> 表逻辑；App 现在会让这一阶段拿到登录邮箱，而不是 guest。</li>
+              <li>这不影响 <code>drm.maipdf.com</code>；DRM 仍走 Bearer token + D1，Cloud 仍走 PHP session + MySQL。</li>
+            </ul>
           </div>
         </div>
 

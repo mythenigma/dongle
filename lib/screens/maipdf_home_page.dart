@@ -3,6 +3,7 @@ import 'drm_license_manage_page.dart';
 import 'drm_protected_viewer_page.dart';
 import 'drm_secure_share_page.dart';
 import 'maipdf2026/maipdf2026_screen.dart';
+import '../utils/maipdf_cloud_auth_service.dart';
 import '../utils/maipdf_auth_service.dart';
 
 /// 首页：只展示「Online MaiPDF Cloud Sharing」入口，点击进入原生 2026 页面。
@@ -149,6 +150,7 @@ class MaipdfHomePage extends StatelessWidget {
   Future<void> _signIn(BuildContext context) async {
     try {
       await MaiPdfAuthService.instance.signInWithGoogle();
+      await MaiPdfCloudAuthService.instance.ensureSession();
       if (!context.mounted) return;
       ScaffoldMessenger.of(
         context,
@@ -163,6 +165,7 @@ class MaipdfHomePage extends StatelessWidget {
 
   Future<void> _signOut(BuildContext context) async {
     await MaiPdfAuthService.instance.signOut();
+    MaiPdfCloudAuthService.instance.clear();
     if (!context.mounted) return;
     ScaffoldMessenger.of(
       context,

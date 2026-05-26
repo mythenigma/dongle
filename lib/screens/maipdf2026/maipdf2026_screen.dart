@@ -7,6 +7,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../utils/maipdf_cloud_auth_service.dart';
+
 /// 原生实现的 MaiPDF Cloud Sharing 页面（对应 maipdf2026.html）
 class Maipdf2026Screen extends StatefulWidget {
   const Maipdf2026Screen({super.key});
@@ -21,7 +23,8 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
 
   int _currentStep = 1;
   String _uploadStatus = 'Network Info';
-  String? _filePath; // sender value after upload (display via _fileNameDisplayController)
+  String?
+  _filePath; // sender value after upload (display via _fileNameDisplayController)
   String? _fileId;
   bool _uploading = false;
   bool _submitting = false;
@@ -57,9 +60,14 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
 
   Future<void> _loadBootstrap() async {
     try {
+      await MaiPdfCloudAuthService.instance.ensureSession();
       final r = await http.get(
         Uri.parse('$_baseUrl/maipdf2026_backend.php?action=bootstrap'),
-        headers: {'Cache-Control': 'no-store', 'X-Requested-With': 'FlutterApp'},
+        headers: {
+          'Cache-Control': 'no-store',
+          'X-Requested-With': 'FlutterApp',
+          ...MaiPdfCloudAuthService.instance.cookieHeaders,
+        },
       );
       if (r.statusCode == 200) {
         final data = jsonDecode(r.body) as Map<String, dynamic>?;
@@ -112,11 +120,14 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
       final deepLink = data?['deep_link'] as String?;
       final link = (deepLink != null && deepLink.isNotEmpty)
           ? deepLink
-          : (token != null && token.isNotEmpty ? 'https://t.me/maipdfbot?start=$token' : 'https://t.me/maipdfbot');
+          : (token != null && token.isNotEmpty
+                ? 'https://t.me/maipdfbot?start=$token'
+                : 'https://t.me/maipdfbot');
       if (token != null && token.isNotEmpty) {
         setState(() {
           _telegramBindToken = token;
-          _telegramStatusText = 'Telegram: Open bot → send /start → tap Get chat_id';
+          _telegramStatusText =
+              'Telegram: Open bot → send /start → tap Get chat_id';
           _telegramStatusLoading = false;
         });
         await launchUrl(Uri.parse(link));
@@ -134,7 +145,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
         _telegramStatusLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Telegram: $e'), backgroundColor: Colors.red.shade700),
+        SnackBar(
+          content: Text('Telegram: $e'),
+          backgroundColor: Colors.red.shade700,
+        ),
       );
     }
   }
@@ -160,7 +174,9 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
       final data = jsonDecode(r.body) as Map<String, dynamic>?;
       final status = data?['status'] as String?;
       final chatId = data?['chat_id'];
-      if (status == 'ok' && chatId != null && chatId.toString().trim().isNotEmpty) {
+      if (status == 'ok' &&
+          chatId != null &&
+          chatId.toString().trim().isNotEmpty) {
         final id = chatId.toString().trim().replaceAll(RegExp(r'\D'), '');
         if (id.isNotEmpty) {
           _telegramChatIdController.text = id;
@@ -171,14 +187,19 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
           });
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('chat_id 已填入'), backgroundColor: Colors.green),
+              const SnackBar(
+                content: Text('chat_id 已填入'),
+                backgroundColor: Colors.green,
+              ),
             );
           }
           return;
         }
       }
       setState(() {
-        _telegramStatusText = status == 'pending' ? 'Telegram: Not linked (send /start in bot)' : 'Telegram: Not linked';
+        _telegramStatusText = status == 'pending'
+            ? 'Telegram: Not linked (send /start in bot)'
+            : 'Telegram: Not linked';
         _telegramStatusLoading = false;
       });
     } catch (e) {
@@ -188,7 +209,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
         _telegramStatusLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Get chat_id: $e'), backgroundColor: Colors.red.shade700),
+        SnackBar(
+          content: Text('Get chat_id: $e'),
+          backgroundColor: Colors.red.shade700,
+        ),
       );
     }
   }
@@ -201,9 +225,9 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
     );
     if (result == null || result.files.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('未选择文件')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('未选择文件')));
       }
       return;
     }
@@ -229,14 +253,20 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
     });
 
     try {
+      await MaiPdfCloudAuthService.instance.ensureSession();
       final uri = Uri.parse('$_baseUrl/r2upload.php');
       final request = http.MultipartRequest('POST', uri);
       request.headers['X-Requested-With'] = 'FlutterApp';
+      request.headers.addAll(MaiPdfCloudAuthService.instance.cookieHeaders);
 
       if (path != null && path.isNotEmpty) {
-        request.files.add(await http.MultipartFile.fromPath('file', path, filename: file.name));
+        request.files.add(
+          await http.MultipartFile.fromPath('file', path, filename: file.name),
+        );
       } else if (bytes != null && bytes.isNotEmpty) {
-        request.files.add(http.MultipartFile.fromBytes('file', bytes, filename: file.name));
+        request.files.add(
+          http.MultipartFile.fromBytes('file', bytes, filename: file.name),
+        );
       } else {
         _showUploadError('无法读取文件');
         return;
@@ -316,7 +346,9 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
     }
     if (days <= 0) return 0;
     final now = DateTime.now().toUtc();
-    final expiry = now.add(Duration(microseconds: (days * 24 * 60 * 60 * 1000000).round()));
+    final expiry = now.add(
+      Duration(microseconds: (days * 24 * 60 * 60 * 1000000).round()),
+    );
     return expiry.millisecondsSinceEpoch ~/ 1000;
   }
 
@@ -333,7 +365,9 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
     final password = int.tryParse(passwordStr) ?? 30;
     if (limit < 1 || password < 30) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Access limit must be ≥1, session seconds ≥30.')),
+        const SnackBar(
+          content: Text('Access limit must be ≥1, session seconds ≥30.'),
+        ),
       );
       return;
     }
@@ -342,9 +376,11 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
       _submitError = null;
     });
     try {
+      await MaiPdfCloudAuthService.instance.ensureSession();
       final uri = Uri.parse('$_baseUrl/maipdf2026_backend.php');
       final request = http.MultipartRequest('POST', uri);
       request.headers['X-Requested-With'] = 'FlutterApp';
+      request.headers.addAll(MaiPdfCloudAuthService.instance.cookieHeaders);
       request.fields['sender'] = _filePath!;
       if (_fileId != null) request.fields['file_id'] = _fileId!;
       request.fields['limit'] = limit.toString();
@@ -354,18 +390,25 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
       final expTs = _computeExpirationTs();
       request.fields['expiration_ts'] = expTs > 0 ? expTs.toString() : '';
       if (_expirationPreset == 'custom') {
-        request.fields['expiration_day'] = _expirationCustomDaysController.text.trim();
+        request.fields['expiration_day'] = _expirationCustomDaysController.text
+            .trim();
       } else {
         request.fields['expiration_day'] = '';
       }
       request.fields['enableTelegramAlert'] = _enableTelegram ? 'yes' : '';
       if (_enableTelegram) {
-        final chatId = _telegramChatIdController.text.trim().replaceAll(RegExp(r'\D'), '');
+        final chatId = _telegramChatIdController.text.trim().replaceAll(
+          RegExp(r'\D'),
+          '',
+        );
         request.fields['mailalert'] = chatId;
       }
-      request.fields['enableEmailValidation'] = _enableEmailValidation ? 'yes' : '';
+      request.fields['enableEmailValidation'] = _enableEmailValidation
+          ? 'yes'
+          : '';
       if (_enableEmailValidation) {
-        request.fields['emailAddresses'] = _emailAddressesController.text.trim();
+        request.fields['emailAddresses'] = _emailAddressesController.text
+            .trim();
       }
       final streamed = await request.send();
       final response = await http.Response.fromStream(streamed);
@@ -393,14 +436,23 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
   void _parseResultFromHtml(String html) {
     String? linkFull;
     // 后端 PHP 输出顺序是 value 在前、id="myInput" 在后，先按此匹配
-    final inputMatchValueFirst = RegExp(r'value="([^"]*)"[^>]*id="myInput"').firstMatch(html);
-    if (inputMatchValueFirst != null) linkFull = inputMatchValueFirst.group(1)?.trim();
+    final inputMatchValueFirst = RegExp(
+      r'value="([^"]*)"[^>]*id="myInput"',
+    ).firstMatch(html);
+    if (inputMatchValueFirst != null) {
+      linkFull = inputMatchValueFirst.group(1)?.trim();
+    }
     if (linkFull == null) {
-      final inputMatch = RegExp(r'id="myInput"[^>]*value="([^"]*)"', dotAll: true).firstMatch(html);
+      final inputMatch = RegExp(
+        r'id="myInput"[^>]*value="([^"]*)"',
+        dotAll: true,
+      ).firstMatch(html);
       if (inputMatch != null) linkFull = inputMatch.group(1)?.trim();
     }
     if (linkFull == null) {
-      final inputMatch2 = RegExp(r'id="myInput"[^>]*>[\s\S]*?value="([^"]*)"').firstMatch(html);
+      final inputMatch2 = RegExp(
+        r'id="myInput"[^>]*>[\s\S]*?value="([^"]*)"',
+      ).firstMatch(html);
       linkFull = inputMatch2?.group(1)?.trim();
     }
     if (linkFull == null && html.contains('myInput')) {
@@ -418,12 +470,18 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
       }
     }
     String? readCode;
-    final msgMatch = RegExp(r'result-message[^>]*>[\s\S]*?result-chip[^>]*>([^<]+)<').firstMatch(html);
+    final msgMatch = RegExp(
+      r'result-message[^>]*>[\s\S]*?result-chip[^>]*>([^<]+)<',
+    ).firstMatch(html);
     if (msgMatch != null) readCode = msgMatch.group(1)?.trim();
     String? modifyCode;
-    final passMatch = RegExp(r'result-password[\s\S]*?result-chip[^>]*>([^<]+)<').firstMatch(html);
+    final passMatch = RegExp(
+      r'result-password[\s\S]*?result-chip[^>]*>([^<]+)<',
+    ).firstMatch(html);
     if (passMatch != null) modifyCode = passMatch.group(1)?.trim();
-    final link = (linkFull != null && linkFull.isNotEmpty) ? linkFull : 'https://maipdf.com';
+    final link = (linkFull != null && linkFull.isNotEmpty)
+        ? linkFull
+        : 'https://maipdf.com';
     _resultLinkController.text = link;
     setState(() {
       _resultLink = link;
@@ -542,9 +600,13 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
       ),
       child: Row(
         children: [
-          Expanded(child: _stepChip(1, 'Upload', _currentStep >= 1, _currentStep > 1)),
+          Expanded(
+            child: _stepChip(1, 'Upload', _currentStep >= 1, _currentStep > 1),
+          ),
           const SizedBox(width: 8),
-          Expanded(child: _stepChip(2, 'Set', _currentStep >= 2, _currentStep > 2)),
+          Expanded(
+            child: _stepChip(2, 'Set', _currentStep >= 2, _currentStep > 2),
+          ),
           const SizedBox(width: 8),
           Expanded(child: _stepChip(3, 'Share', _currentStep >= 3, false)),
         ],
@@ -565,10 +627,14 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                 end: Alignment.bottomRight,
               )
             : null,
-        color: completed ? const Color(0xFF10B981) : (isActive ? null : const Color(0xFFF7F3FF)),
+        color: completed
+            ? const Color(0xFF10B981)
+            : (isActive ? null : const Color(0xFFF7F3FF)),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: completed ? const Color(0xFF10B981) : (isActive ? const Color(0xFF7C3AED) : const Color(0xFFE0D7F4)),
+          color: completed
+              ? const Color(0xFF10B981)
+              : (isActive ? const Color(0xFF7C3AED) : const Color(0xFFE0D7F4)),
         ),
       ),
       child: Row(
@@ -578,7 +644,11 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: completed ? Colors.white.withValues(alpha: 0.22) : (isActive ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFE7DEF8)),
+              color: completed
+                  ? Colors.white.withValues(alpha: 0.22)
+                  : (isActive
+                        ? Colors.white.withValues(alpha: 0.25)
+                        : const Color(0xFFE7DEF8)),
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
@@ -586,7 +656,9 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               '$step',
               style: TextStyle(
                 fontWeight: FontWeight.w800,
-                color: completed ? Colors.white : (isActive ? Colors.white : const Color(0xFF718096)),
+                color: completed
+                    ? Colors.white
+                    : (isActive ? Colors.white : const Color(0xFF718096)),
                 fontSize: 13,
               ),
             ),
@@ -597,8 +669,12 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               label,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontWeight: isActive || completed ? FontWeight.w700 : FontWeight.w600,
-                color: completed || isActive ? Colors.white : const Color(0xFF7A6D8D),
+                fontWeight: isActive || completed
+                    ? FontWeight.w700
+                    : FontWeight.w600,
+                color: completed || isActive
+                    ? Colors.white
+                    : const Color(0xFF7A6D8D),
                 fontSize: 13,
               ),
             ),
@@ -609,7 +685,11 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
   }
 
   Widget _buildSection1() {
-    final isError = _uploadStatus.contains('失败') || _uploadStatus.contains('超时') || _uploadStatus.contains('无法') || _uploadStatus.contains('unavailable');
+    final isError =
+        _uploadStatus.contains('失败') ||
+        _uploadStatus.contains('超时') ||
+        _uploadStatus.contains('无法') ||
+        _uploadStatus.contains('unavailable');
     return _SectionCard(
       title: '1: Upload File',
       child: Column(
@@ -646,16 +726,32 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                         SizedBox(height: 12),
-                        Text('正在上传…', style: TextStyle(fontWeight: FontWeight.w500)),
+                        Text(
+                          '正在上传…',
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
                       ],
                     )
                   : Column(
                       children: [
-                        Icon(Icons.cloud_upload_outlined, size: 40, color: Theme.of(context).colorScheme.primary),
+                        Icon(
+                          Icons.cloud_upload_outlined,
+                          size: 40,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                         const SizedBox(height: 10),
-                        const Text('Choose File', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Text(
+                          'Choose File',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                         const SizedBox(height: 4),
-                        Text('Tap to pick a PDF', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                        Text(
+                          'Tap to pick a PDF',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
                       ],
                     ),
             ),
@@ -680,7 +776,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               border: OutlineInputBorder(),
               filled: true,
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -692,7 +791,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               hintText: 'Number of Opens',
               border: OutlineInputBorder(),
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -704,7 +806,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               hintText: 'in (seconds)',
               border: OutlineInputBorder(),
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -712,7 +817,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
             children: [
               Icon(Icons.lock_outline, size: 20, color: Colors.grey[700]),
               const SizedBox(width: 8),
-              const Text('Dynamic Watermark', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                'Dynamic Watermark',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
               const Spacer(),
               Switch(
                 value: _dynamicWatermark,
@@ -727,7 +835,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               labelText: 'View Type',
               border: OutlineInputBorder(),
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
             items: const [
               DropdownMenuItem(value: 'straight', child: Text('SecureView')),
@@ -743,7 +854,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               labelText: 'Expiration',
               border: OutlineInputBorder(),
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
             items: const [
               DropdownMenuItem(value: '', child: Text('Select duration')),
@@ -765,16 +879,26 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                 hintText: 'Custom days',
                 border: OutlineInputBorder(),
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
               ),
             ),
           ],
           const SizedBox(height: 16),
           Row(
             children: [
-              Icon(Icons.notifications_outlined, size: 20, color: Colors.grey[700]),
+              Icon(
+                Icons.notifications_outlined,
+                size: 20,
+                color: Colors.grey[700],
+              ),
               const SizedBox(width: 8),
-              const Text('Read Alerts (Telegram)', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                'Read Alerts (Telegram)',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
               const Spacer(),
               Switch(
                 value: _enableTelegram,
@@ -788,7 +912,11 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               _telegramStatusText,
               style: TextStyle(
                 fontSize: 13,
-                color: _telegramStatusLoading ? Colors.grey : (_telegramStatusText.contains('Linked') ? Colors.green.shade700 : Colors.grey[700]),
+                color: _telegramStatusLoading
+                    ? Colors.grey
+                    : (_telegramStatusText.contains('Linked')
+                          ? Colors.green.shade700
+                          : Colors.grey[700]),
               ),
             ),
             const SizedBox(height: 8),
@@ -801,7 +929,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.chat_bubble_outline),
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -814,9 +945,15 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                 ),
                 const SizedBox(width: 8),
                 OutlinedButton.icon(
-                  onPressed: _telegramStatusLoading ? null : _fetchTelegramChatId,
+                  onPressed: _telegramStatusLoading
+                      ? null
+                      : _fetchTelegramChatId,
                   icon: _telegramStatusLoading
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Icon(Icons.refresh, size: 18),
                   label: const Text('Get chat_id'),
                 ),
@@ -833,7 +970,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
             children: [
               Icon(Icons.email_outlined, size: 20, color: Colors.grey[700]),
               const SizedBox(width: 8),
-              const Text('Email Verification', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                'Email Verification',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
               const Spacer(),
               Switch(
                 value: _enableEmailValidation,
@@ -850,7 +990,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                 hintText: 'Enter up to 50 email addresses, separated by commas',
                 border: OutlineInputBorder(),
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
               ),
             ),
           ],
@@ -858,7 +1001,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
           if (_submitError != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: Text(_submitError!, style: const TextStyle(color: Colors.red)),
+              child: Text(
+                _submitError!,
+                style: const TextStyle(color: Colors.red),
+              ),
             ),
           FilledButton.icon(
             onPressed: _submitting ? null : _submitForm,
@@ -866,13 +1012,18 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   )
                 : const Icon(Icons.link),
             label: Text(_submitting ? 'Generating...' : 'Create Secure Link'),
             style: FilledButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
               backgroundColor: const Color(0xFF8B5CF6),
             ),
           ),
@@ -888,7 +1039,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SelectableText(link, style: const TextStyle(fontWeight: FontWeight.w600)),
+          SelectableText(
+            link,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -899,7 +1053,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
                   ),
                 ),
               ),
@@ -907,9 +1064,9 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
               IconButton.filled(
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: link));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Link copied')),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Link copied')));
                 },
                 icon: const Icon(Icons.copy),
               ),
@@ -918,7 +1075,10 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
           const SizedBox(height: 16),
           Text('Read Code: $_readCode', style: const TextStyle(fontSize: 13)),
           const SizedBox(height: 4),
-          Text('Modify Code: $_modifyCode', style: const TextStyle(fontSize: 13)),
+          Text(
+            'Modify Code: $_modifyCode',
+            style: const TextStyle(fontSize: 13),
+          ),
           const SizedBox(height: 20),
           Center(
             child: QrImageView(
@@ -929,19 +1089,27 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
             ),
           ),
           const SizedBox(height: 8),
-          const Center(child: Text('Scan QR Code To Read', style: TextStyle(fontSize: 12, color: Colors.grey))),
+          const Center(
+            child: Text(
+              'Scan QR Code To Read',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextButton.icon(
-                onPressed: () => launchUrl(Uri.parse('https://maipdf.com/pdf/hahachange.php')),
+                onPressed: () => launchUrl(
+                  Uri.parse('https://maipdf.com/pdf/hahachange.php'),
+                ),
                 icon: const Icon(Icons.edit, size: 18),
                 label: const Text('Change File'),
               ),
               const SizedBox(width: 12),
               TextButton.icon(
-                onPressed: () => launchUrl(Uri.parse('https://maipdf.com/getresult.html')),
+                onPressed: () =>
+                    launchUrl(Uri.parse('https://maipdf.com/getresult.html')),
                 icon: const Icon(Icons.list_alt, size: 18),
                 label: const Text('Access Records'),
               ),
