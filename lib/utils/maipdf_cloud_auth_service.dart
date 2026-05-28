@@ -8,25 +8,19 @@ class MaiPdfCloudAuthService {
 
   static final MaiPdfCloudAuthService instance = MaiPdfCloudAuthService._();
 
-  static const String baseUrl = 'https://maipdf.com';
+  static const String apiBaseUrl = 'https://maipdf.com/app-api';
 
-  final Map<String, String> _cookies = {};
   String? _syncedUid;
 
-  bool get hasCloudSession => _cookies.isNotEmpty;
+  bool get hasCloudAccount => _syncedUid != null;
 
-  Map<String, String> get cookieHeaders {
-    if (_cookies.isEmpty) return {};
-    final cookie = _cookies.entries
-        .map((entry) => '${entry.key}=${entry.value}')
-        .join('; ');
-    return {'Cookie': cookie};
-  }
+  // Kept for old Cloud requests. The new App API does not need PHP cookies.
+  Map<String, String> get cookieHeaders => const {};
 
   Future<void> ensureSession() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-    if (_syncedUid == user.uid && _cookies.isNotEmpty) return;
+    if (_syncedUid == user.uid) return;
     await syncFromFirebaseUser(user);
   }
 
@@ -34,68 +28,75 @@ class MaiPdfCloudAuthService {
     final currentUser = user ?? FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
 
-    final email = currentUser.email;
-    final uid = currentUser.uid;
-    if (email == null || email.isEmpty || uid.isEmpty) return;
+    final token = await currentUser.getIdToken();
+    if (token == null || token.isEmpty) return;
 
-    await _postJson('$baseUrl/6/firebase-register.php', {
-      'email': email,
-      'uid': uid,
-    });
-    await _postJson('$baseUrl/6/firebase-session-login.php', {
-      'email': email,
-      'uid': uid,
-    });
+    await _postAppJson(
+      '$apiBaseUrl/cloud-login.php',
+      token: token,
+      body: const {},
+    );
+    _syncedUid = currentUser.uid;
+  }
 
-    _syncedUid = uid;
+  Future<String?> recordCloudLink({
+    required String filePath,
+    required String identifier,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+
+    await ensureSession();
+    final token = await user.getIdToken();
+    if (token == null || token.isEmpty) return null;
+
+    final data = await _postAppJson(
+      '$apiBaseUrl/cloud-record.php',
+      token: token,
+      body: {'file_path': filePath, 'identifier': identifier},
+    );
+    final mode = data['mode']?.toString();
+    if (mode == 'updated') return 'Cloud record updated for ${user.email}';
+    return 'Cloud record saved for ${user.email}';
   }
 
   void clear() {
-    _cookies.clear();
     _syncedUid = null;
   }
 
-  Future<void> _postJson(String url, Map<String, String> body) async {
+  Future<Map<String, dynamic>> _postAppJson(
+    String url, {
+    required String token,
+    required Map<String, String> body,
+  }) async {
     final response = await http
         .post(
           Uri.parse(url),
           headers: {
+            'Authorization': 'Bearer $token',
             'Content-Type': 'application/json; charset=utf-8',
             'X-Requested-With': 'FlutterApp',
-            ...cookieHeaders,
           },
           body: jsonEncode(body),
         )
         .timeout(const Duration(seconds: 30));
 
-    _storeCookies(response);
+    Map<String, dynamic> decoded = {};
+    try {
+      final value = jsonDecode(response.body);
+      if (value is Map<String, dynamic>) decoded = value;
+    } catch (_) {
+      // Keep the HTTP status readable when the response is not JSON.
+    }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      var message = response.reasonPhrase ?? 'HTTP ${response.statusCode}';
-      try {
-        final decoded = jsonDecode(response.body);
-        if (decoded is Map<String, dynamic>) {
-          message =
-              decoded['error']?.toString() ??
-              decoded['msg']?.toString() ??
-              message;
-        }
-      } catch (_) {
-        // Keep the HTTP status readable when the response is not JSON.
-      }
+      final message =
+          decoded['message']?.toString() ??
+          decoded['error']?.toString() ??
+          response.reasonPhrase ??
+          'HTTP ${response.statusCode}';
       throw StateError(message);
     }
-  }
-
-  void _storeCookies(http.Response response) {
-    final raw = response.headers['set-cookie'];
-    if (raw == null || raw.isEmpty) return;
-    for (final name in const ['PHPSESSID', 'dc']) {
-      final match = RegExp('$name=([^;,\\s]+)').firstMatch(raw);
-      final value = match?.group(1);
-      if (value != null && value.isNotEmpty) {
-        _cookies[name] = value;
-      }
-    }
+    return decoded;
   }
 }

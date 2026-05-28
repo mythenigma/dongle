@@ -51,6 +51,7 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
   String? _resultLink;
   String? _readCode;
   String? _modifyCode;
+  String? _cloudRecordStatus;
 
   @override
   void initState() {
@@ -60,7 +61,7 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
 
   Future<void> _loadBootstrap() async {
     try {
-      await MaiPdfCloudAuthService.instance.ensureSession();
+      await _syncCloudAccountBestEffort();
       final r = await http.get(
         Uri.parse('$_baseUrl/maipdf2026_backend.php?action=bootstrap'),
         headers: {
@@ -78,6 +79,14 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
         }
       }
     } catch (_) {}
+  }
+
+  Future<void> _syncCloudAccountBestEffort() async {
+    try {
+      await MaiPdfCloudAuthService.instance.ensureSession();
+    } catch (_) {
+      // Cloud account recording must never block upload or link generation.
+    }
   }
 
   void _showUploadError(String message) {
@@ -253,7 +262,7 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
     });
 
     try {
-      await MaiPdfCloudAuthService.instance.ensureSession();
+      await _syncCloudAccountBestEffort();
       final uri = Uri.parse('$_baseUrl/r2upload.php');
       final request = http.MultipartRequest('POST', uri);
       request.headers['X-Requested-With'] = 'FlutterApp';
@@ -376,7 +385,7 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
       _submitError = null;
     });
     try {
-      await MaiPdfCloudAuthService.instance.ensureSession();
+      await _syncCloudAccountBestEffort();
       final uri = Uri.parse('$_baseUrl/maipdf2026_backend.php');
       final request = http.MultipartRequest('POST', uri);
       request.headers['X-Requested-With'] = 'FlutterApp';
@@ -421,6 +430,7 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
         return;
       }
       _parseResultFromHtml(html);
+      await _recordCloudLinkForAccount();
       setState(() {
         _submitting = false;
         _currentStep = 3;
@@ -469,25 +479,111 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
         }
       }
     }
-    String? readCode;
-    final msgMatch = RegExp(
-      r'result-message[^>]*>[\s\S]*?result-chip[^>]*>([^<]+)<',
-    ).firstMatch(html);
-    if (msgMatch != null) readCode = msgMatch.group(1)?.trim();
-    String? modifyCode;
-    final passMatch = RegExp(
-      r'result-password[\s\S]*?result-chip[^>]*>([^<]+)<',
-    ).firstMatch(html);
-    if (passMatch != null) modifyCode = passMatch.group(1)?.trim();
     final link = (linkFull != null && linkFull.isNotEmpty)
         ? linkFull
         : 'https://maipdf.com';
+
+    final readCode =
+        _extractIdentifierFromResultLink(link) ??
+        _cleanResultCode(_extractTextById(html, 'result-message'));
+    final modifyCode = _cleanResultCode(
+      _extractResultChip(html, 'result-password') ??
+          _extractTextById(html, 'result-password'),
+    );
+
     _resultLinkController.text = link;
     setState(() {
       _resultLink = link;
       _readCode = readCode ?? '—';
       _modifyCode = modifyCode ?? '—';
+      _cloudRecordStatus = null;
     });
+  }
+
+  String? _extractResultChip(String html, String id) {
+    final match = RegExp(
+      '$id[\\s\\S]*?result-chip[^>]*>([^<]+)<',
+      caseSensitive: false,
+    ).firstMatch(html);
+    return match?.group(1)?.trim();
+  }
+
+  String? _extractTextById(String html, String id) {
+    final idIdx = html.indexOf('id="$id"');
+    if (idIdx < 0) return null;
+    final tagEnd = html.indexOf('>', idIdx);
+    if (tagEnd < 0) return null;
+    final closingStart = html.indexOf('</', tagEnd + 1);
+    if (closingStart < 0) return null;
+    final raw = html.substring(tagEnd + 1, closingStart);
+    return _stripHtml(raw).trim();
+  }
+
+  String _stripHtml(String value) {
+    return value
+        .replaceAll(RegExp(r'<[^>]+>'), '')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#34;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>');
+  }
+
+  String? _cleanResultCode(String? value) {
+    if (value == null) return null;
+    var code = value
+        .replaceFirst(RegExp(r'^Password:\s*', caseSensitive: false), '')
+        .replaceFirst(RegExp(r'^Modify Code:\s*', caseSensitive: false), '')
+        .replaceFirst(RegExp(r'^Read Code:\s*', caseSensitive: false), '')
+        .trim();
+    code = code.replaceAll(RegExp(r'^"+|"+$'), '').trim();
+    if (code.isEmpty ||
+        RegExp(r'To Del\.MOD Link', caseSensitive: false).hasMatch(code)) {
+      return null;
+    }
+    return code;
+  }
+
+  Future<void> _recordCloudLinkForAccount() async {
+    final filePath = _filePath;
+    final link = _resultLink;
+    if (filePath == null || filePath.isEmpty || link == null || link.isEmpty) {
+      return;
+    }
+    final identifier = _extractIdentifierFromResultLink(link);
+    if (identifier == null || identifier.isEmpty) return;
+
+    try {
+      final status = await MaiPdfCloudAuthService.instance.recordCloudLink(
+        filePath: filePath,
+        identifier: identifier,
+      );
+      if (!mounted || status == null) return;
+      setState(() {
+        _cloudRecordStatus = status;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _cloudRecordStatus = 'Cloud record failed: $e';
+      });
+    }
+  }
+
+  String? _extractIdentifierFromResultLink(String link) {
+    final direct = RegExp(r'/file/([^@/?#]+)@pdf').firstMatch(link);
+    if (direct != null) return direct.group(1);
+
+    final uri = Uri.tryParse(link);
+    if (uri == null) return null;
+    final segments = uri.pathSegments;
+    final fileIndex = segments.indexOf('file');
+    if (fileIndex < 0 || fileIndex + 1 >= segments.length) return null;
+    final value = segments[fileIndex + 1];
+    final atIndex = value.indexOf('@pdf');
+    if (atIndex <= 0) return null;
+    return value.substring(0, atIndex);
   }
 
   @override
@@ -1079,6 +1175,18 @@ class _Maipdf2026ScreenState extends State<Maipdf2026Screen> {
             'Modify Code: $_modifyCode',
             style: const TextStyle(fontSize: 13),
           ),
+          if (_cloudRecordStatus != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _cloudRecordStatus!,
+              style: TextStyle(
+                fontSize: 12,
+                color: _cloudRecordStatus!.contains('failed')
+                    ? Colors.red.shade700
+                    : Colors.green.shade700,
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           Center(
             child: QrImageView(

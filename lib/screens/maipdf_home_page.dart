@@ -150,7 +150,11 @@ class MaipdfHomePage extends StatelessWidget {
   Future<void> _signIn(BuildContext context) async {
     try {
       await MaiPdfAuthService.instance.signInWithGoogle();
-      await MaiPdfCloudAuthService.instance.ensureSession();
+      try {
+        await MaiPdfCloudAuthService.instance.ensureSession();
+      } catch (_) {
+        // Cloud account sync is optional; Google sign-in itself succeeded.
+      }
       if (!context.mounted) return;
       ScaffoldMessenger.of(
         context,

@@ -168,7 +168,9 @@
             <h3>上传</h3>
             <p>Flutter → <code>POST https://maipdf.com/pdf/r2upload.php</code>，字段 <code>file</code>。返回 JSON 的 <code>path</code> 作为 Step 2 的 <code>sender</code>。</p>
             <h3>生成链接</h3>
-            <p>Flutter → <code>POST maipdf2026_backend.php</code>，带 <code>X-Requested-With: FlutterApp</code>。PHP 端需对 App 请求跳过 <code>uploadedfile</code> Cookie 检查（见 <code>BACKEND_APP_INTEGRATION.md</code> 或本仓库内 backend 修改）。</p>
+            <p>Flutter → <code>POST maipdf2026_backend.php</code>，带 <code>X-Requested-With: FlutterApp</code>。后端返回 HTML 后，App 解析出链接和 <code>identifier</code>。</p>
+            <h3>记录登录用户</h3>
+            <p>Flutter → <code>POST https://maipdf.com/app-api/cloud-login.php</code> 确认用户，再 → <code>POST https://maipdf.com/app-api/cloud-record.php</code> 把 <code>file_path</code>、<code>m#identifier</code>、登录邮箱写入 <code>block</code> 表。</p>
             <h3>R2 / 域名</h3>
             <p>全部在服务端处理，App 不直连 R2，不配置域名。</p>
           </div>
@@ -187,10 +189,11 @@
          ├─ Cloud Tab
          │  └─ START → Maipdf2026Screen
          │     └─ lib/screens/maipdf2026/maipdf2026_screen.dart
-         │        ├─ if signed in, sync PHP session via MaiPdfCloudAuthService
-         │        ├─ pick PDF → https://maipdf.com/pdf/r2upload.php with PHP cookies
-         │        ├─ submit form → https://maipdf.com/pdf/maipdf2026_backend.php with PHP cookies
-         │        └─ result → link + read code + modify code + QR
+         │        ├─ if signed in, MaiPdfCloudAuthService calls /app-api/cloud-login.php
+         │        ├─ pick PDF → https://maipdf.com/pdf/r2upload.php
+         │        ├─ submit form → https://maipdf.com/pdf/maipdf2026_backend.php
+         │        ├─ parse result → link + read code + modify code + QR
+         │        └─ if signed in, POST /app-api/cloud-record.php
          │
          └─ DRM Tab
             ├─ Sign in with Google
@@ -344,6 +347,11 @@ lib/screens/drm_license_manage_page.dart
                   <td>App 登录服务：Firebase Google 登录、退出、拿 ID token、调用 <code>/api/auth/session</code> 同步后端 user 行、为 DRM API 提供 Bearer header。</td>
                 </tr>
                 <tr>
+                  <td><code>lib/utils/maipdf_cloud_auth_service.dart</code></td>
+                  <td><code>maipdf_home_page.dart</code>、<code>maipdf2026_screen.dart</code></td>
+                  <td>Cloud App 专用登录/记录服务：用 Firebase <code>ID token</code> 调用 <code>https://maipdf.com/app-api/cloud-login.php</code> 和 <code>cloud-record.php</code>，把生成链接后的 <code>file_path</code> 与登录邮箱写进 <code>block</code> 表。</td>
+                </tr>
+                <tr>
                   <td><code>lib/utils/download_helper.dart</code></td>
                   <td><code>drm_secure_share_page.dart</code></td>
                   <td>条件导出：Web 用 <code>download_helper_web.dart</code>，原生/桌面用 <code>download_helper_io.dart</code>。</td>
@@ -394,19 +402,25 @@ lib/screens/drm_license_manage_page.dart
                   <td>Cloud 上传</td>
                   <td><code>Maipdf2026Screen</code></td>
                   <td><code>POST https://maipdf.com/pdf/r2upload.php</code></td>
-                  <td>返回 <code>path</code> / <code>file_id</code>。App 登录后会先同步 PHP session，并带 <code>Cookie</code> 请求；当前上传接口本身主要保存文件，不单独写用户表。</td>
+                  <td>返回 <code>path</code> / <code>file_id</code>。当前上传接口本身主要保存文件，不单独写用户表。</td>
                 </tr>
                 <tr>
                   <td>Cloud 生成链接</td>
                   <td><code>Maipdf2026Screen</code></td>
                   <td><code>POST https://maipdf.com/pdf/maipdf2026_backend.php</code></td>
-                  <td>返回 HTML，App 解析出链接、Read Code、Modify Code。带 PHP session cookie 后，后端现有 <code>$dengru</code> 会识别为登录邮箱，并在现有记录逻辑里把用户名和文件路径关联起来。</td>
+                  <td>返回 HTML，App 解析出链接、Read Code、Modify Code，再从链接中取出 <code>identifier</code>。</td>
                 </tr>
                 <tr>
-                  <td>Cloud 登录同步</td>
+                  <td>Cloud App 登录</td>
                   <td><code>Maipdf2026Screen</code> / 首页登录</td>
-                  <td><code>POST https://maipdf.com/6/firebase-register.php</code> + <code>POST https://maipdf.com/6/firebase-session-login.php</code></td>
-                  <td><code>MaiPdfCloudAuthService</code> 用 Firebase 的 <code>email</code> 和 <code>uid</code> 同步 Cloud PHP 登录，并保存 <code>PHPSESSID</code> / <code>dc</code> cookie 给 Cloud 上传和生成链接使用。</td>
+                  <td><code>POST https://maipdf.com/app-api/cloud-login.php</code></td>
+                  <td><code>MaiPdfCloudAuthService</code> 使用 Firebase <code>ID token</code> 调用 App 专用 PHP 接口，在 <code>userlist</code> 中确认/创建用户，不再依赖网页登录 cookie。</td>
+                </tr>
+                <tr>
+                  <td>Cloud 记录归属</td>
+                  <td><code>Maipdf2026Screen</code></td>
+                  <td><code>POST https://maipdf.com/app-api/cloud-record.php</code></td>
+                  <td>生成链接后，App 把 <code>file_path</code> 和 <code>identifier</code> 发给接口；后端写入/更新 <code>block</code> 表：<code>ip=file_path</code>、<code>md5=m#identifier</code>、<code>attr=登录邮箱</code>。</td>
                 </tr>
                 <tr>
                   <td>DRM 打包</td>
@@ -519,13 +533,17 @@ lib/screens/drm_license_manage_page.dart
         <div class="card card-work">
           <div class="card-header"><i class="fas fa-cloud-upload-alt me-2"></i>2026-05-26 升级记录：Cloud Share 上传/生成链接记录登录用户</div>
           <div class="card-body">
-            <p class="meta-bar">日期：2026-05-26 · 目标：App 的 Cloud Share 不做完整账号中心，先确保登录用户上传并生成链接时，PHP 后端能识别用户名和文件。</p>
+            <p class="meta-bar">日期：2026-05-26 · 目标：App 的 Cloud Share 不做完整账号中心，先确保登录用户生成链接后，数据库能记录用户名和文件。</p>
             <ul class="small mb-0">
-              <li>新增 <code>lib/utils/maipdf_cloud_auth_service.dart</code>，复用 App 的 Firebase 用户，调用 Cloud PHP 现有 <code>/6/firebase-register.php</code> 和 <code>/6/firebase-session-login.php</code>。</li>
-              <li>该服务会保存 PHP 返回的 <code>PHPSESSID</code> 和 <code>dc</code> cookie。</li>
-              <li><code>Maipdf2026Screen</code> 在 bootstrap、上传 <code>r2upload.php</code>、生成链接 <code>maipdf2026_backend.php</code> 前会先同步 Cloud session，并在请求头带上 <code>Cookie</code>。</li>
-              <li>现有在线版逻辑里，真正把登录用户和 PDF 路径关联到记录的是 <code>maipdf2026_backend.php</code> 生成链接阶段的 <code>$dengru</code> / <code>block</code> 表逻辑；App 现在会让这一阶段拿到登录邮箱，而不是 guest。</li>
-              <li>这不影响 <code>drm.maipdf.com</code>；DRM 仍走 Bearer token + D1，Cloud 仍走 PHP session + MySQL。</li>
+              <li>在 <code>C:\Users\chanz\Documents\GitHub\aws\html\app-api\</code> 新增 App 专用接口，不修改在线版原来的 <code>pdf/maipdfupload.html</code>、<code>r2upload.php</code>、<code>maipdf2026_backend.php</code>。</li>
+              <li><code>app-api/firebase-token.php</code>：验证 Firebase <code>ID token</code>，项目为 <code>maipdf-login</code>。</li>
+              <li><code>app-api/cloud-login.php</code>：App 登录后确认/创建 <code>userlist</code> 用户，使用邮箱和 Firebase <code>uid</code>。</li>
+              <li><code>app-api/cloud-record.php</code>：App 生成链接后写入/更新 <code>block</code> 表，格式和在线版上传记录保持一致：<code>ip=file_path</code>、<code>md5=m#identifier</code>、<code>attr=登录邮箱</code>。</li>
+              <li>Flutter 侧 <code>MaiPdfCloudAuthService</code> 已改为调用 <code>/app-api/cloud-login.php</code> 和 <code>/app-api/cloud-record.php</code>，不再依赖网页登录 cookie，所以浏览器 localhost 测试也更稳。</li>
+              <li><code>Maipdf2026Screen</code> 在 <code>maipdf2026_backend.php</code> 返回 HTML 后解析链接中的 <code>identifier</code>，再把 <code>file_path</code> + <code>identifier</code> 发给新接口完成记录。</li>
+              <li>修正一处重大流程风险：Cloud App API 只是“记录登录用户”的附加步骤，不能阻断原来的上传和生成链接。现在 <code>cloud-login.php</code> 同步失败时，<code>r2upload.php</code> 和 <code>maipdf2026_backend.php</code> 仍会正常执行；只有最后写记录失败时显示提示。</li>
+              <li>修正结果解析：PHP 后端实际输出 <code>id="result-password"</code> 的文本格式是 <code>Password: "..."</code>，不是 App 之前假设的 <code>result-chip</code>。现在 App 会从链接中取 <code>Read Code</code>，并从 <code>result-password</code> 文本中清理出 <code>Modify Code</code>。</li>
+              <li>这不影响 <code>drm.maipdf.com</code>；DRM 仍走 Bearer token + D1，Cloud App 专用接口走 <code>maipdf.com</code> PHP + MySQL。</li>
             </ul>
           </div>
         </div>
@@ -738,11 +756,13 @@ lib/screens/drm_license_manage_page.dart
 → 返回 path / file_id
 → POST https://maipdf.com/pdf/maipdf2026_backend.php
 → App 从返回 HTML 解析 link / Read Code / Modify Code
+→ 登录用户：POST https://maipdf.com/app-api/cloud-record.php
 → App 展示链接和二维码</code></pre>
             <ul class="small">
               <li><code>r2upload.php</code> 接收字段 <code>file</code>，返回 JSON。</li>
               <li><code>maipdf2026_backend.php</code> 接收 <code>sender</code>、<code>limit</code>、<code>password</code>、<code>darkmode</code>、<code>zhangai</code>、<code>expiration_ts</code> 等表单字段。</li>
-              <li>App 请求会带 <code>X-Requested-With: FlutterApp</code>，PHP 端需要对 App 请求跳过网页 Cookie <code>uploadedfile</code> 检查。</li>
+              <li><code>app-api/cloud-login.php</code> 和 <code>app-api/cloud-record.php</code> 是 App 专用接口，使用 Firebase Bearer token，不影响网页版登录和上传页面。</li>
+              <li><code>cloud-record.php</code> 写 <code>block</code> 表的形状和在线版一致：<code>ip</code> 是 PDF 路径，<code>md5</code> 是 <code>m#identifier</code>，<code>attr</code> 是用户邮箱。</li>
               <li>未来可以让 PHP 对 App 返回 JSON，这样 App 不用再解析 HTML。</li>
             </ul>
 
@@ -1130,7 +1150,8 @@ void dispose() {
             <p class="small">后端返回的是整页 HTML，不是 JSON。所以用正则从 HTML 里找：</p>
             <ul class="small">
               <li>带 <code>id="myInput"</code> 的 input 的 <code>value="..."</code> → 完整链接（注意 PHP 输出时 value 在 id 前面，所以正则先匹配 <code>value="([^"]*)"[^>]*id="myInput"</code>）。</li>
-              <li><code>result-message</code> / <code>result-password</code> 里若有 result-chip 再取读码/改码。</li>
+              <li>Read Code 从完整链接 <code>/file/{identifier}@pdf</code> 中提取 <code>identifier</code>。</li>
+              <li>Modify Code 优先取 <code>result-password</code> 里的 <code>result-chip</code>；如果后端返回旧格式 <code>Password: "..."</code>，就去掉 <code>Password:</code> 和引号，得到真正的改码。</li>
             </ul>
             <p class="small">解析出的链接存到 <code>_resultLink</code> 和 <code>_resultLinkController.text</code>，第三步就显示这个链接和二维码。</p>
 
